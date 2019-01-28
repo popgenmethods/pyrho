@@ -86,10 +86,13 @@ git clone https://github.com/popgenmethods/pyrho.git pyrho
 pip install pyrho/
 ```
 
-If you have ```pytest``` installed, you can check that everything is
-running smoothly by running
+If you have ```pytest``` and ```nose``` installed, you can check that 
+everything is running smoothly by running
 
-```pytest pyrho/tests/tests.py```
+```python -m pytest pyrho/tests/tests.py```
+
+NB: the first time you run pyrho, numba will compile and cache a number
+of functions, which can take up to ~30 seconds.
 
 Usage
 -----
