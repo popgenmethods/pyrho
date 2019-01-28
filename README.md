@@ -58,7 +58,7 @@ Change to a directory where you want to store ldpop and then run
 
 ```
 git clone https://github.com/popgenmethods/ldpop.git ldpop
-pip install ldpop
+pip install ldpop/
 ```
 
 Note that this will create a directory ldpop.
@@ -72,11 +72,18 @@ and
 If you do not have these installed, these should be installed using
 ```apt-get```, ```yum```, ```conda```, ```brew``` etc...
 
+You will also need to have cython installed.  If you do not yet have it
+installed, run
+
+```
+pip install cython
+```
+
 You should be able to then just clone and install pyrho by running
 
 ```
 git clone https://github.com/popgenmethods/pyrho.git pyrho
-pip install pyrho
+pip install pyrho/
 ```
 
 If you have ```pytest``` installed, you can check that everything is
