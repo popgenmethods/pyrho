@@ -208,7 +208,8 @@ are ready to infer recombination maps from real data.
 
 pyrho supports data in fasta format and LDhat's sites and locs format, but it
 is easiest to directly use VCF formatted data.  pyrho supports VCF, bgzipped
-VCF, and BCF format files.
+VCF, and BCF format files. If using LDhat's formats see the 
+[note about using sites and locs](#a-note-about-ldhat-format-input).
 
 A typical usage is
 
@@ -218,7 +219,8 @@ pyrho optimize --vcffile <data> --widowsize <w> --blockpenalty <bpen> \
 --numthreads <par>
 ```
 
-with ```<data>``` being a VCF, bgzipped VCF, or BCF file, ```<w>``` and
+with ```<data>``` being a VCF, bgzipped VCF, or BCF file containing a
+single chromosome, ```<w>``` and
 ```<bpen>``` being hyperparameters chosen using [hyperparam](#hyperparam),
 and ```<ploidy>``` should be ```1``` for phased data and ```2``` for unphased
 data.
@@ -233,6 +235,25 @@ recombination rate.
 
 To see a full list of options and their meaning, run
 ```pyrho optimzie --help```.
+
+
+#### A note about LDhat format input
+
+The preferred input format for pyrho is a VCF format file containing a single
+chrmosome.  LDhat format files may also be used with the following important
+caveat.
+
+If using LDhat formatted data (i.e., a sites file and a locs file) note that
+we use a slighly different convention than LDhat (sorry!).  For unphased data,
+LDhat uses the convention 0 = homozygous reference, 1 = homozygous alternate,
+2 = heterozygous.  We do *not* use this convention.
+
+We use 0 = homozygous reference, 1 = heterozygous, 2 = homozygous alternate,
+and N = missing.  That is, each entry should be the number of alternate
+alleles, or N for missing.
+We otherwise follow the formatting (including the headers) of LDhat as
+described [here](http://ldhat.sourceforge.net).
+
 
 ### compute_r2
 
@@ -257,6 +278,10 @@ Citation
 --------
 
 If you use pyrho please cite
+
+[Spence, J.P. and Song, Y.S. Inference and analysis of population-specific fine-scale recombination maps across 26 diverse human populations. bioRxiv preprint.](https://doi.org/10.1101/532168)
+
+and
 
 [Kamm, J.A.\*, Spence, J.P.\*, Chan, J., and Song, Y.S. Two-locus likelihoods under variable population size and fine-scale recombination rate estimation. Genetics, Vol. 203 No. 3 (2016) 1381-1399.](http://www.genetics.org/content/203/3/1381)
 
