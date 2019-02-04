@@ -70,7 +70,7 @@ def _main(args):
         if not args.approx:
             raise IOError('Cannot use moran_pop_size when computing an exact '
                           'lookup table.  Turn off --aprox flag.')
-        if max_size < args.moran_pop_size:
+        if max_size > args.moran_pop_size:
             raise IOError('moran_pop_size must be at least as large as the '
                           'desired sample size.')
         num_particles = args.moran_pop_size

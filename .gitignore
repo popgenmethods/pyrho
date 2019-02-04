@@ -231,3 +231,4 @@ pyrho/__pycache__/*
 .cache/v/cache/lastfailed
 pyrho/CEU_N_256_lookup_table_downsampled_demo.hdf5
 pyrho/data.vcf.*
+pyrho.egg-info/*
