@@ -2,7 +2,7 @@
 The pyrho fused-LASSO objective function.
 
 Classes:
-    RhomapObjective: the objective function for a given dataset.
+    RhomapObjective: The objective function for a given dataset.
 """
 from __future__ import division
 

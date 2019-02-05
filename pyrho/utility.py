@@ -1,6 +1,10 @@
 """
 Numerical tools used throughout pyrho.
 
+Classes:
+    InterruptablePool: A wrapper for multiprocssing.Pool that handles
+        keyborad interrupts more gracefully.
+
 Functions:
     get_table_idx: Returns the lookup table index of a configuration.
     log_mult_coef: Computes the log of a multinomial coefficient.

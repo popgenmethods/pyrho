@@ -1,8 +1,11 @@
 """
-Infers a fine-scale recombination maps from data.
+Infers fine-scale recombination maps from data.
 
 Functions:
-    optimize: Builds and optimizes and objective functon.
+    optimize: Builds and optimizes an objective functon.
+
+Run on the command line with pyrho optimzie -h or --help to see
+a list of options and their description.
 """
 from __future__ import division
 import time
@@ -185,8 +188,8 @@ def optimize(genos, ploidy, positions, table, metawindow,
     Infers a fine-scale recombination map.
 
     Builds an objective function based on data and then optimizes that
-    objective function using proximal gradient descent, returning the resulting
-    recombination map.
+    objective function using proximal gradient descent, returns the
+    resulting recombination map.
 
     Args:
         genos: A num_loci by num_samples array containing the genotypes.
@@ -217,8 +220,8 @@ def optimize(genos, ploidy, positions, table, metawindow,
     k = 0
     non_overlap = (metawindow - 2*overlap - 1)
     logging.debug('Splitting sequence into metawindows.')
-    logging.debug('There are %d individuals, and %d loci', genos.shape[1],
-                  genos.shape[0])
+    logging.debug('There are %d individuals, and %d loci',
+                  genos.shape[1], genos.shape[0])
     while True:
         if len(genos) - (k + 1)*non_overlap < overlap:
             end = len(genos)

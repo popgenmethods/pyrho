@@ -14,7 +14,7 @@ from pyrho.utility import get_table_idx, log_mult_coef
 
 
 def _slow_sample(table, config, sample_size):
-    '''
+    """
     Gold standard for computing haplotype likelihoods.
 
     Explicitly marginalizes over each missing individual in turn.
@@ -27,7 +27,7 @@ def _slow_sample(table, config, sample_size):
     Returns:
         The log-likelihood of observing config evaluated at each value
         of rho in table.
-    '''
+    """
     hconf = np.array([[config[0], config[1], config[2]],
                       [config[3], config[4], config[5]],
                       [config[6], config[7], 0]])

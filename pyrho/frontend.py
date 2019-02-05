@@ -21,12 +21,12 @@ COMMANDS = {
 
 def main():
     """
-    Takes command line input and call appropriate pyrho command.
+    Takes command line input and calls appropriate pyrho command.
 
     The available commands are:
         make_table: Build lookup tables to use in other commands.
-        hyperparam: Perform simulations studies to determine good
-            hyperparameter settings for optimize.
+        hyperparam: Perform simulation studies to determine good
+            hyperparameter settings for pyrho optimize.
         optimize: Infer fine-scale recombination maps from sequence data.
         compute_r2: Compute quantiles or mean of the theoretical
             distribution of r^2.

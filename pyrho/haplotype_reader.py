@@ -73,16 +73,16 @@ def genos_to_configs(genotypes, window_size, ploidy):
     Converts a genotype array into an array of two-locus configs.
 
     Args:
-        genotypes: a num_loci by num_samples array containing the data.
-        window_size: consider all pairs within windows of this size.
-        ploidy: the ploidy of genotypes (i.e. 1 for phased and 2 for
+        genotypes: A num_loci by num_samples array containing the data.
+        window_size: Consider all pairs within windows of this size.
+        ploidy: The ploidy of genotypes (i.e. 1 for phased and 2 for
             unphased data).
 
     Returns:
         A tuple (configs, adjacency_matix) as follows.
         configs: All two-locus configurations formed by considering pairs of
             loci within windows of size window_size
-        adjacency_matrix: a binary num_configs by num_recombination_rate
+        adjacency_matrix: A binary num_configs by num_recombination_rate
             array indicating which recombination rates are between the loci
             loci that make up each config.
     """
@@ -250,9 +250,9 @@ def parse_vcf_to_genos(vcf_filename, ploidy, pass_str=None):
 
     Returns:
         A tuple of (genos, locs) as follows.
-        genos: a num_loci by num_samples array containing the data with -1
+        genos: A num_loci by num_samples array containing the data with -1
                encoding missingness. genos only contains segregating sites.
-        locs: a num_loci length array containing the genomic locations of the
+        locs: A num_loci length array containing the genomic locations of the
               loci in genos.
 
     Raises:
