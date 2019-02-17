@@ -234,7 +234,7 @@ being the reference effective population size and r being the per-generation
 recombination rate.
 
 To see a full list of options and their meaning, run
-```pyrho optimzie --help```.
+```pyrho optimize --help```.
 
 
 #### A note about LDhat format input
