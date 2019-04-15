@@ -277,18 +277,11 @@ def parse_vcf_to_genos(vcf_filename, ploidy, pass_str=None):
             continue
         if pass_str and variant.FILTER != pass_str:
             continue
-        # Pending cyvcf2 support for directly representing
-        # phased genotypes as a numpy array:
-        # gts, phased = variant.numpy_genotypes
-        # if gts.shape[1] != 2:
-        #     raise IOError('VCF must be for diploids.')
-
-        # Instead, use this to get phased genotypes:
-        gt_list = variant.genotypes
-        if np.any([len(gt) != 3 for gt in gt_list]):
+        gts = variant.genotype.array().astype(int)
+        if gts.shape[1] != 3:
             raise IOError('VCF must be for diploids.')
-        gts = np.array([gt[0:-1] for gt in gt_list])
-        phased = np.array([gt[-1] for gt in gt_list])
+        phased = gts[:, -1].astype(bool)
+        gts = gts[:, :2]
         if ploidy == 2:
             gts[gts[:, 1] <= -1, 0] = -1
             gts[gts[:, 0] <= -1, 1] = -1

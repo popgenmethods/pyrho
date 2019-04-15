@@ -55,11 +55,13 @@ def _compute_statistics(quantiles, compute_mean, maf, sample_size, table):
     statistics = np.zeros((table.shape[1], compute_mean + len(quantiles)))
     if compute_mean:
         statistics[:, 0] = probs.transpose().dot(r_sq)
-    sort_args = np.argsort(r_sq)
-    r_sq = r_sq[sort_args]
-    for rho in range(table.shape[1]):
-        cdf = np.cumsum(probs[:, rho][sort_args])
-        statistics[rho, compute_mean:] = r_sq[np.searchsorted(cdf, quantiles)]
+    if quantiles is not None:
+        sort_args = np.argsort(r_sq)
+        r_sq = r_sq[sort_args]
+        for rho in range(table.shape[1]):
+            cdf = np.cumsum(probs[:, rho][sort_args])
+            these_quantiles = r_sq[np.searchsorted(cdf, quantiles)]
+            statistics[rho, compute_mean:] = these_quantiles
     return statistics
 
 
@@ -104,13 +106,14 @@ def _main(args):
         table = downsample(table, args.samplesize)
     rho_grid = np.array(table.columns)
     labels = ['Rho']
+    quants = None
     if args.compute_mean:
         labels.append('mean')
     if args.quantiles != '':
         labels += args.quantiles.split(',')
-    quants = np.array(list(map(float, args.quantiles.split(','))))
+        quants = np.array(list(map(float, args.quantiles.split(','))))
     statistics = _compute_statistics(quants, args.compute_mean, args.MAFcut,
-                                     args.samplesize, table.as_matrix())
+                                     args.samplesize, table.values())
     to_print = ['\t'.join(labels)]
     for rho, rho_stat in zip(rho_grid, statistics):
         to_print.append('\t'.join(map(str, [rho] + rho_stat.tolist())))

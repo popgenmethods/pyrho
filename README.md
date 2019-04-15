@@ -86,7 +86,7 @@ git clone https://github.com/popgenmethods/pyrho.git pyrho
 pip install pyrho/
 ```
 
-If you have ```pytest``` and ```nose``` installed, you can check that 
+You can check that 
 everything is running smoothly by running
 
 ```python -m pytest pyrho/tests/tests.py```
@@ -158,6 +158,9 @@ can handle sample sizes in the hundreds (e.g.,
 The output is an hdf format table containing all of the pre-computed
 likelihoods needed to run [hyperparam](#hyperparam), [optimize](#optimize),
 and [compute_r2](#compute_r2).
+
+Note that make_table can consume significant amounts of memory (N=256 requires
+about 100G of RAM using the --approx flag).
 
 To see a full list of options and their meaning, run 
 ```pyrho make_table --help```.
