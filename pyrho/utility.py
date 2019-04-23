@@ -2,7 +2,7 @@
 Numerical tools used throughout pyrho.
 
 Classes:
-    InterruptablePool: A wrapper for multiprocssing.Pool that handles
+    InterruptablePool: A wrapper for multiprocessing.Pool that handles
         keyborad interrupts more gracefully.
 
 Functions:
