@@ -322,6 +322,8 @@ def _main(args):
     max_size = genos.shape[1] * args.ploidy
     logging.info('Loading lookup table...')
     table = read_hdf(args.tablefile, 'ldtable')
+    max_rho = table.columns[-1]
+    table.columns *= 100./max_rho
     logging.info('\tDone!')
     table_size = sum(map(int, table.index.values[0].split()))
     if table_size > max_size:
@@ -339,5 +341,5 @@ def _main(args):
     outfile = args.outfile if args.outfile else sys.stdout
     with open(outfile, 'w') as ofile:
         for start, end, rho in zip(positions[:-1], positions[1:], result):
-            line = [str(start), str(end), str(rho)]
+            line = [str(start), str(end), str(rho * max_rho / 100.)]
             ofile.write('\t'.join(line) + '\n')

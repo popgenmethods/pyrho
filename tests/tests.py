@@ -23,7 +23,7 @@ from pyrho.haplotype_reader import (_get_adjacency_matrix,
                                     parse_seqs_to_genos,
                                     parse_vcf_to_genos)
 from pyrho.compute_r2 import _log_comb_factor, _compute_statistics
-
+from pyrho.size_reader import read_msmc, read_smcpp, decimate_sizes
 
 pytestmark = pytest.mark.filterwarnings("ignore")
 THIS_DIR = dirname(abspath(__file__))
@@ -384,3 +384,82 @@ def test_compute_statistics():
                                 2,
                                 table)
     assert np.allclose(means, 1.0)
+
+
+def test_read_msmc():
+    true_sizes = [0.00086526447673996, 9.79088625144171e-05,
+                  0.000171382542974173, 0.000457984501804459,
+                  0.000272927253969727, 0.000131071906047658,
+                  6.82882858274492e-05, 4.10030998343475e-05,
+                  2.79371748811273e-05, 2.12348489352847e-05,
+                  1.99020025394955e-05, 1.99020025394955e-05,
+                  2.2919799039202e-05, 2.2919799039202e-05,
+                  2.98841094236551e-05, 2.98841094236551e-05,
+                  4.04164511122607e-05, 4.04164511122607e-05,
+                  5.57810348943842e-05, 5.57810348943842e-05,
+                  8.00343187158654e-05, 8.00343187158654e-05,
+                  0.000116691016192045, 0.000116691016192045,
+                  0.000167278907468, 0.000167278907468,
+                  0.000226324223028942, 0.000226324223028942,
+                  0.000287970327537451, 0.000287970327537451,
+                  0.000345006037605658, 0.000345006037605658,
+                  0.000392215310516861, 0.000392215310516861,
+                  0.000424300540558889, 0.000424300540558889,
+                  0.000447447313078885, 0.000447447313078885,
+                  0.000841088166225936, 0.000841088166225936]
+    true_times = [1.58858e-06, 3.21843e-06, 4.89174e-06,
+                  6.61091e-06, 8.3785e-06, 1.01973e-05, 1.20705e-05,
+                  1.40013e-05, 1.59934e-05, 1.80508e-05, 2.01779e-05,
+                  2.23798e-05, 2.46617e-05, 2.70297e-05, 2.94906e-05,
+                  3.2052e-05, 3.47225e-05, 3.75116e-05, 4.04305e-05,
+                  4.34919e-05, 4.67103e-05, 5.01028e-05, 5.36893e-05,
+                  5.74932e-05, 6.15427e-05, 6.58717e-05, 7.05216e-05,
+                  7.5544e-05, 8.10035e-05, 8.69838e-05, 9.35947e-05,
+                  0.000100985, 0.000109364, 0.000119036, 0.000130476,
+                  0.000144477, 0.000162528, 0.000187969, 0.000231461]
+    sizes, times = read_msmc('msmc_test.final.txt', 1.0)
+    assert np.allclose(sizes, true_sizes)
+    assert np.allclose(times, true_times)
+
+    sizes, times = read_msmc('msmc_test.final.txt', 1.25e-8)
+    assert np.allclose(sizes, np.array(true_sizes) / 1.25e-8)
+    assert np.allclose(times, np.array(true_times) / 1.25e-8)
+
+
+def test_read_smcpp():
+    true_sizes_start = [138482.84333082315,
+                        138482.84333082315,
+                        139331.82583178935]
+    true_sizes_end = [19408.187247411068,
+                      20959.43140840318,
+                      23058.569473392425]
+    true_times_start = [50.0, 53.97505585700569,
+                        58.2661330953377]
+    true_times_end = [83485.36048509754,
+                      90122.53990850793,
+                      97287.38251073883]
+    sizes, times = read_smcpp('ACB_pop_sizes.csv')
+    assert np.allclose(sizes[0:3], true_sizes_start)
+    assert np.allclose(sizes[-3:], true_sizes_end)
+    assert np.allclose(times[0:3], true_times_start)
+    assert np.allclose(times[-3:], true_times_end)
+
+
+def test_decimate_sizes():
+    sizes, times = read_smcpp('ACB_pop_sizes.csv')
+    new_sizes, new_times = decimate_sizes(sizes, times, 0.0, None)
+    assert np.allclose(sizes[1:], new_sizes)
+    assert np.allclose(times[1:], new_times)
+    new_sizes, new_times = decimate_sizes(sizes, times, 0.0, 1.0)
+    assert np.allclose(sizes[1:-1], new_sizes[:-1])
+    assert np.allclose(1.0, new_sizes[-1])
+    assert np.allclose(times[1:], new_times)
+    new_sizes, new_times = decimate_sizes(sizes, times, 0.25, None)
+    new_idx = 0
+    for idx, t in enumerate(times):
+        if t > new_times[new_idx]:
+            new_idx += 1
+            assert new_times[new_idx] >= t
+        rel_error = np.abs((sizes[idx] - new_sizes[new_idx]))
+        rel_error /= sizes[idx]
+        assert rel_error < 0.25

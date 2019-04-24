@@ -12,8 +12,14 @@ fused-LASSO
     * [hyperparam](#hyperparam)
     * [optimize](#optimize)
     * [compute_r2](#compute_r2)
+* [Example](#example)
 * [Citation](#citation)
 
+
+NB: in version 0.1.0 we switched everything from coalescent units to
+natural scale -- that is inputs should now be in terms of Ne, generations,
+and per-generation mutation rates.  The output is now also automatically
+scaled to be the per-generation recombination rate.
 
 ## Human Recombination Maps
 
@@ -115,7 +121,7 @@ standard use case would be
 
 ```
 pyrho make_table --sample_size <n> --approx  --moran_pop_size <N> \
---numthreads <par> --theta <theta> --outfile <outfile> \
+--numthreads <par> --mu <mu> --outfile <outfile> \
 --popsizes <size1>,<size2>,<size3> --epochtimes <breakpoint1>,<breakpoint2>
 ```
 
@@ -123,15 +129,13 @@ which indicates that we should compute a lookup table for a sample of size
 ```<n>```
 , from a population where at present the size is 
 ```<size1>```
-(relative to the reference Ne), at 
+, at 
 ```<breakpoint1>```
-coalescent units in the past the size was 
+generations in the past the size was 
 ```<size2>```
-and so on, with a population
-scaled mutation rate 
-```<theta>```
-(i.e. 4\*Nref\*mu), where mu is the per-generation
-mutation rate and Nref is the referenced effective population size.
+and so on, with a per-generation
+mutation rate 
+```<mu>```
 The --numthreads option tells pyrho to use 
 ```<par>```
 processors
@@ -179,13 +183,13 @@ different metrics.  A typical usage is
 
 ```
 pyrho hyperparam --samplesize <n> --tablefile <make_table_output> \
---theta <theta> --ploidy <ploidy> \
+--mu <mu> --ploidy <ploidy> \
 --popsizes <size1>,<size2>,<size3> --epochtimes <breakpoint1>,<breakpoint2> 
 ```
 
 where ```<n>``` is your haploid sample size, ```<make_table_output>``` is
 the output of running [make_table](#make_table), and
-```<theta>```, ```<size1>```..., and ```<breakpoint1>```... are as above. 
+```<mu>```, ```<size1>```..., and ```<breakpoint1>```... are as above. 
 ```<ploidy>``` should be set to ```1``` if using phased data and ```2``` for
 unphased genotype data.  Ploidies other than ```1``` or ```2``` are not
 currently supported.
@@ -231,10 +235,8 @@ data.
 
 The output file has three columns -- the first column is the zero-indexed
 start of an interval, the second column is the end of the interval
-(non-inclusive), and the third column is rho, which is the population-scaled
-recombination rate in that interval.  That is, rho = 4\*Nref\*r, with Nref
-being the reference effective population size and r being the per-generation
-recombination rate.
+(non-inclusive), and the third column is r, which is the per-generation 
+recombination rate in that interval.
 
 To see a full list of options and their meaning, run
 ```pyrho optimize --help```.
@@ -276,6 +278,14 @@ of the distribution of r<sup>2</sup> for the lookup table stored in
 ```<make_table_output>```.  It is possible to compute statistics for a smaller
 sample size by setting ```<n>``` to be less than the sample size for which
 ```<make_table_output>``` was computed.
+
+
+Example
+-------
+
+The example folder contains a well-commented shell script example.sh which
+runs through a typical use-case, taking a VCF file and the output of smc++
+and ultimately computing a fine-scale recombination map.
 
 Citation
 --------

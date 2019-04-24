@@ -113,10 +113,13 @@ def _main(args):
         labels += args.quantiles.split(',')
         quants = np.array(list(map(float, args.quantiles.split(','))))
     statistics = _compute_statistics(quants, args.compute_mean, args.MAFcut,
-                                     args.samplesize, table.values())
+                                     args.samplesize, table.values)
     to_print = ['\t'.join(labels)]
     for rho, rho_stat in zip(rho_grid, statistics):
         to_print.append('\t'.join(map(str, [rho] + rho_stat.tolist())))
-    ofile_name = args.outfile if args.outfile else sys.stdout
-    with open(ofile_name, 'w') as ofh:
-        ofh.write('\n'.join(to_print))
+    if args.outfile:
+        with open(args.outfile, 'w') as ofh:
+            ofh.write('\n'.join(to_print))
+    else:
+        sys.stdout.write('\n'.join(to_print))
+        sys.stdout.write('\n')

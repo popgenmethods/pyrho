@@ -27,20 +27,21 @@ from numba import njit
 
 from pyrho.utility import InterruptablePool as Pool
 from pyrho.optimizer import optimize
+from pyrho.size_reader import read_msmc, read_smcpp, decimate_sizes
 
 
 def _simulate_data(sim_args):
     prng = np.random.RandomState()
     msp_args, reco_maps = sim_args
     rmap = reco_maps[prng.choice(len(reco_maps))]
-    pop_config, theta, demo, ploidy = msp_args
-    reco_map = msprime.RecombinationMap(rmap[0], [r / 4 for r in rmap[1]])
+    pop_config, mu, demo, ploidy = msp_args
+    reco_map = msprime.RecombinationMap(rmap[0], [r / 40000. for r in rmap[1]])
     label = np.zeros(1000000)
     for start, end, rate in zip(rmap[0][:-1], rmap[0][1:], rmap[1][:-1]):
         label[start:end] = rate
     tree_sequence = msprime.simulate(population_configurations=pop_config,
                                      recombination_map=reco_map,
-                                     mutation_rate=theta/4.,
+                                     mutation_rate=mu,
                                      demographic_events=demo)
     haps = np.copy(tree_sequence.genotype_matrix())
     haps = np.sum([haps[:, k::ploidy] for k in range(ploidy)], axis=0)
@@ -56,11 +57,12 @@ def _call_optimize(o_args):
      table,
      ploidy,
      bpen,
-     overlap) = o_args
+     overlap,
+     max_rho) = o_args
     logging.info('Windowsize = %d, Block Penalty = %f', windowsize, bpen)
     haps, positions, _ = dataset
     result = optimize(haps, ploidy, positions, table, metawindow,
-                      overlap, windowsize, bpen, pool=None)
+                      overlap, windowsize, bpen, pool=None) * max_rho / 100.
     logging.info('Done optimizing')
     return result
 
@@ -99,7 +101,7 @@ def _score(estimates, positions, labels, pool):
         new_labels.append(lab[first:last])
 
     estimates_1bp = np.hstack(new_estimates)
-    labels_1bp = np.hstack(new_labels)
+    labels_1bp = np.hstack(new_labels) / 40000.
     corr_1bp = pool.apply_async(_compute_correlations,
                                 (estimates_1bp, labels_1bp))
     estimates_10kb = pool.map(_window_average,
@@ -161,14 +163,20 @@ def _args(super_parser):
                           help='File containing a pyrho lookup table.')
     required.add_argument('-n', '--samplesize', type=int, required=True,
                           help='Maximum number of haplotypes in your sample.')
-    required.add_argument('-th', '--theta', type=float, required=True,
+    required.add_argument('-m', '--mu', type=float, required=True,
                           help='Twice the population-scaled mutation rate.')
     parser.add_argument('-t', '--epochtimes', type=str, required=False,
                         default='', help='Comma delimitted list of epoch '
-                                         'breakpoints in coalescent units.')
+                                         'breakpoints in generations.')
+    parser.add_argument('--msmc_file', type=str, required=False,
+                        default='', help='MSMC output file to specify the '
+                                         'size history.')
+    parser.add_argument('--smcpp_file', type=str, required=False,
+                        default='', help='smc++ csv file to specify the size '
+                                         'history.')
     parser.add_argument('-p', '--popsizes', type=str, required=False,
-                        default='1.0', help='Comma delimitted list of epoch '
-                                            'population sizes.')
+                        default='', help='Comma delimitted list of epoch '
+                                         'population sizes.')
     parser.add_argument('--num_sims', type=int, required=False, default=100,
                         help='Number of 1Mb regions to simulate.')
     parser.add_argument('-bpen', '--blockpenalty', type=str, required=False,
@@ -178,20 +186,46 @@ def _args(super_parser):
     parser.add_argument('-w', '--windowsize', type=str, required=False,
                         default='30,40,50,60,70,80,90',
                         help='Comma delimited list of window sizes to try.')
+    parser.add_argument('--decimate_rel_tol', required=False, type=float,
+                        default=0.0, help='Relative tolerance when decimating '
+                                          'size history.')
+    parser.add_argument('--decimate_anc_size', required=False, type=float,
+                        default=None, help='Most ancestral size when '
+                                           'decimating size history.')
     return parser
 
 
 def _main(args):
     table = read_hdf(args.tablefile, 'ldtable')
-    block_penalties = map(float, args.blockpenalty.split(','))
-    window_sizes = map(float, args.windowsize.split(','))
-    pop_sizes = list(map(float, args.popsizes.split(',')))
-    times = []
-    if args.epochtimes:
-        times = list(map(float, args.epochtimes.split(',')))
+    max_rho = table.columns[-1]
+    table.columns *= 100. / max_rho
+    block_penalties = list(map(float, args.blockpenalty.split(',')))
+    window_sizes = list(map(float, args.windowsize.split(',')))
+    logging.info('Searching over Windowsizes %s, and Block Penalties %s',
+                 window_sizes, block_penalties)
+    if args.msmc_file:
+        if args.smcpp_file or args.epochtimes or args.popsizes:
+            raise IOError('Can only specify one of msmc_file, smcpp_file, or '
+                          'popsizes')
+        pop_sizes, times = read_msmc(args.msmc_file, args.mu)
+    elif args.smcpp_file:
+        if args.msmc_file or args.epochtimes or args.popsizes:
+            raise IOError('Can only specify one of msmc_file, smcpp_file, or '
+                          'popsizes')
+        pop_sizes, times = read_smcpp(args.smcpp_file)
+    else:
+        pop_sizes = list(map(float, args.popsizes.split(',')))
+        times = []
+        if args.epochtimes:
+            times = list(map(float, args.epochtimes.split(',')))
     if len(pop_sizes) != len(times) + 1:
         raise IOError('Number of population sizes must '
                       'match number of epochs.')
+    pop_sizes, times = decimate_sizes(pop_sizes,
+                                      times,
+                                      args.decimate_rel_tol,
+                                      args.decimate_anc_size)
+
     pop_config = [
         msprime.PopulationConfiguration(sample_size=args.samplesize,
                                         initial_size=pop_sizes[0])]
@@ -205,7 +239,7 @@ def _main(args):
     reco_maps = _load_hapmap()
     pool = Pool(args.numthreads, maxtasksperchild=100)
     logging.info('Simulating data...')
-    simulation_args = [((pop_config, args.theta, demography, args.ploidy),
+    simulation_args = [((pop_config, args.mu, demography, args.ploidy),
                         reco_maps) for k in range(args.num_sims)]
     test_set = pool.map(_simulate_data, simulation_args)
     scores = {}
@@ -215,7 +249,8 @@ def _main(args):
                                     repeat(window_size), repeat(table),
                                     repeat(args.ploidy),
                                     repeat(block_penalty),
-                                    repeat(args.overlap))
+                                    repeat(args.overlap),
+                                    repeat(max_rho))
 
             estimates = pool.map(_call_optimize, optimization_args)
             scores[(block_penalty,
@@ -223,22 +258,23 @@ def _main(args):
                                            [ts[1] for ts in test_set],
                                            [ts[2] for ts in test_set],
                                            pool)
-    outfile = args.outfile if args.outfile else sys.stdout
-    with open(outfile, 'w') as ofile:
-        ofile.write('\t'.join(['Block_Penalty',
-                               'Window_Size',
-                               'Pearson_Corr_1bp',
-                               'Pearson_Corr_10kb',
-                               'Pearson_Corr_100kb',
-                               'Log_Pearson_Corr_1bp',
-                               'Log_Pearson_Corr_10kb',
-                               'Log_Pearson_Corr_100kb',
-                               'Spearman_Corr_1bp',
-                               'Spearman_Corr_10kb'
-                               'Spearman_Corr_100kb',
-                               'L2',
-                               'Log_L2']) + '\n')
-        for block_penalty, window_size in sorted(scores):
-            line = ([block_penalty, window_size]
-                    + scores[block_penalty, window_size])
-            ofile.write('\t'.join(map(str, line)) + '\n')
+    ofile = open(args.outfile, 'w') if args.outfile else sys.stdout
+    ofile.write('\t'.join(['Block_Penalty',
+                           'Window_Size',
+                           'Pearson_Corr_1bp',
+                           'Pearson_Corr_10kb',
+                           'Pearson_Corr_100kb',
+                           'Log_Pearson_Corr_1bp',
+                           'Log_Pearson_Corr_10kb',
+                           'Log_Pearson_Corr_100kb',
+                           'Spearman_Corr_1bp',
+                           'Spearman_Corr_10kb'
+                           'Spearman_Corr_100kb',
+                           'L2',
+                           'Log_L2']) + '\n')
+    for block_penalty, window_size in sorted(scores):
+        line = ([block_penalty, window_size]
+                + scores[block_penalty, window_size])
+        ofile.write('\t'.join(map(str, line)) + '\n')
+    if args.outfile:
+        ofile.close()
