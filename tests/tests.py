@@ -417,11 +417,13 @@ def test_read_msmc():
                   7.5544e-05, 8.10035e-05, 8.69838e-05, 9.35947e-05,
                   0.000100985, 0.000109364, 0.000119036, 0.000130476,
                   0.000144477, 0.000162528, 0.000187969, 0.000231461]
-    sizes, times = read_msmc('msmc_test.final.txt', 1.0)
+    sizes, times = read_msmc(joinpath(THIS_DIR, 'msmc_test.final.txt'),
+                             1.0)
     assert np.allclose(sizes, true_sizes)
     assert np.allclose(times, true_times)
 
-    sizes, times = read_msmc('msmc_test.final.txt', 1.25e-8)
+    sizes, times = read_msmc(joinpath(THIS_DIR, 'msmc_test.final.txt'),
+                             1.25e-8)
     assert np.allclose(sizes, np.array(true_sizes) / 1.25e-8)
     assert np.allclose(times, np.array(true_times) / 1.25e-8)
 
@@ -438,7 +440,7 @@ def test_read_smcpp():
     true_times_end = [83485.36048509754,
                       90122.53990850793,
                       97287.38251073883]
-    sizes, times = read_smcpp('ACB_pop_sizes.csv')
+    sizes, times = read_smcpp(joinpath(THIS_DIR, 'ACB_pop_sizes.csv'))
     assert np.allclose(sizes[0:3], true_sizes_start)
     assert np.allclose(sizes[-3:], true_sizes_end)
     assert np.allclose(times[0:3], true_times_start)
@@ -446,7 +448,7 @@ def test_read_smcpp():
 
 
 def test_decimate_sizes():
-    sizes, times = read_smcpp('ACB_pop_sizes.csv')
+    sizes, times = read_smcpp(joinpath(THIS_DIR, 'ACB_pop_sizes.csv'))
     new_sizes, new_times = decimate_sizes(sizes, times, 0.0, None)
     assert np.allclose(sizes[1:], new_sizes)
     assert np.allclose(times[1:], new_times)
