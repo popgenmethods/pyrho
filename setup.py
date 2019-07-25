@@ -8,7 +8,7 @@ setup(
     author='Jeffrey P. Spence, Yun S. Song',
     author_email='spence.jeffrey@berkeley.edu',
     packages=['pyrho'],
-    install_requires=['numpy>=1.14.2', 'scipy>=0.19.0', 'msprime>=0.4.0',
+    install_requires=['numpy>=1.14.2', 'scipy>=1.0.0', 'msprime>=0.4.0',
                       'numba>=0.42.0', 'pandas>=0.23.4', 'tables>=3.3.0',
                       'cyvcf2>=0.10.9', 'ldpop', 'nose>=1.3.7',
                       'pytest>=3.0.7'],
