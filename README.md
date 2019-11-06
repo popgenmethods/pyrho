@@ -18,8 +18,8 @@ fused-LASSO
 
 NB: in version 0.1.0 we switched everything from coalescent units to
 natural scale -- that is inputs should now be in terms of Ne, generations,
-and per-generation mutation rates.  The output is now also automatically
-scaled to be the per-generation recombination rate.
+and per-base, per-generation mutation rates.  The output is now also
+automatically scaled to be the per-generation recombination rate.
 
 ## Human Recombination Maps
 
@@ -235,8 +235,8 @@ data.
 
 The output file has three columns -- the first column is the zero-indexed
 start of an interval, the second column is the end of the interval
-(non-inclusive), and the third column is r, which is the per-generation 
-recombination rate in that interval.
+(non-inclusive), and the third column is r, which is the per-base
+per-generation recombination rate in that interval.
 
 To see a full list of options and their meaning, run
 ```pyrho optimize --help```.
@@ -292,7 +292,7 @@ Citation
 
 If you use pyrho please cite
 
-[Spence, J.P. and Song, Y.S. Inference and analysis of population-specific fine-scale recombination maps across 26 diverse human populations. bioRxiv preprint.](https://doi.org/10.1101/532168)
+[Spence, J.P. and Song, Y.S. Inference and analysis of population-specific fine-scale recombination maps across 26 diverse human populations. Science Advances, Vol. 5, No. 10, eaaw9206 (2019).](https://doi.org/10.1126/sciadv.aaw9206)
 
 and
 

@@ -14,6 +14,7 @@ import logging
 import sys
 from pkg_resources import resource_stream
 from itertools import repeat
+from functools import partial
 try:
     from itertools import izip as zip
 except ImportError:
@@ -49,16 +50,8 @@ def _simulate_data(sim_args):
     return haps, mut_pos, label
 
 
-def _call_optimize(o_args):
-    logging.info('Beginning an optimization...')
-    (dataset,
-     metawindow,
-     windowsize,
-     table,
-     ploidy,
-     bpen,
-     overlap,
-     max_rho) = o_args
+def _call_optimize(dataset, metawindow, windowsize, table, ploidy, bpen,
+                   overlap, max_rho):
     logging.info('Windowsize = %d, Block Penalty = %f', windowsize, bpen)
     haps, positions, _ = dataset
     result = optimize(haps, ploidy, positions, table, metawindow,
@@ -241,18 +234,21 @@ def _main(args):
     logging.info('Simulating data...')
     simulation_args = [((pop_config, args.mu, demography, args.ploidy),
                         reco_maps) for k in range(args.num_sims)]
-    test_set = pool.map(_simulate_data, simulation_args)
+    test_set = list(pool.imap(_simulate_data, simulation_args, chunksize=50))
+    logging.info('\tdone simulating')
     scores = {}
     for block_penalty in block_penalties:
         for window_size in window_sizes:
-            optimization_args = zip(test_set, repeat(args.metawindow),
-                                    repeat(window_size), repeat(table),
-                                    repeat(args.ploidy),
-                                    repeat(block_penalty),
-                                    repeat(args.overlap),
-                                    repeat(max_rho))
-
-            estimates = pool.map(_call_optimize, optimization_args)
+            estimates = list(pool.imap(partial(_call_optimize,
+                                               metawindow=args.metawindow,
+                                               windowsize=window_size,
+                                               table=table,
+                                               ploidy=args.ploidy,
+                                               bpen=block_penalty,
+                                               overlap=args.overlap,
+                                               max_rho=max_rho),
+                                       test_set,
+                                       chunksize=50))
             scores[(block_penalty,
                     window_size)] = _score(estimates,
                                            [ts[1] for ts in test_set],
