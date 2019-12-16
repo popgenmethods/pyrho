@@ -7,7 +7,6 @@ from pandas import read_hdf
 from scipy.special import binom
 from scipy.sparse import dok_matrix
 from scipy.sparse.linalg import spsolve
-from nose.tools import assert_raises
 
 from pyrho.utility import get_table_idx, log_mult_coef, downsample
 from pyrho.rho_splines import (_get_hap_likelihood,
@@ -33,7 +32,7 @@ def test_log_mult_coef():
     assert np.allclose(np.log(binom(10, 2)), log_mult_coef(np.array([2, 8])))
     assert np.allclose(log_mult_coef(np.array([1, 1, 1])), np.log(6))
     assert np.allclose(log_mult_coef(np.array([0, 0, 0, 0])), 0)
-    assert_raises(ValueError, log_mult_coef, np.array([-1]))
+    pytest.raises(ValueError, log_mult_coef, np.array([-1]))
 
 
 def test_get_table_idx():
@@ -49,9 +48,9 @@ def test_get_table_idx():
                 n00 = sample_size - i - j + k
                 assert idx == get_table_idx(n00, n01, n10, n11, sample_size)
                 idx += 1
-    assert_raises(ValueError, get_table_idx, 1, 1, 1, 1, 10)
-    assert_raises(ValueError, get_table_idx, -1, 10, 1, 0, 10)
-    assert_raises(ValueError, get_table_idx, 10, 0, 0, 0, 10)
+    pytest.raises(ValueError, get_table_idx, 1, 1, 1, 1, 10)
+    pytest.raises(ValueError, get_table_idx, -1, 10, 1, 0, 10)
+    pytest.raises(ValueError, get_table_idx, 10, 0, 0, 0, 10)
 
 
 def test_downsample():
@@ -292,7 +291,7 @@ def test_parse_seqs_to_genos():
     assert np.all(gts == expected)
     assert np.all(locs == expected_locs)
 
-    assert_raises(IOError, parse_seqs_to_genos,
+    pytest.raises(IOError, parse_seqs_to_genos,
                   joinpath(THIS_DIR, 'test_dna.fa'), 2, '')
 
     gts, locs = parse_seqs_to_genos(joinpath(THIS_DIR, 'test.fa'), 1, '')
@@ -301,7 +300,7 @@ def test_parse_seqs_to_genos():
     assert np.all(gts == expected)
     assert np.all(locs == expected_locs)
 
-    assert_raises(IOError,
+    pytest.raises(IOError,
                   parse_seqs_to_genos,
                   joinpath(THIS_DIR, 'sites.txt'),
                   1,
