@@ -464,3 +464,13 @@ def test_decimate_sizes():
         rel_error = np.abs((sizes[idx] - new_sizes[new_idx]))
         rel_error /= sizes[idx]
         assert rel_error < 0.25
+
+
+def test_issue6():
+    sizes, times = read_msmc(joinpath(THIS_DIR, 'issue6_msmc.txt'),
+                             1.0)
+    N_ref = .0005 / 4.
+    times = [t / (2. * N_ref) for t in times]
+    sizes = [p / N_ref for p in sizes]
+    new_sizes, new_times = decimate_sizes(sizes, times, 0.0, None)
+    assert np.abs(new_times[0] - 1.85199e-07 / (2. * N_ref)) < 1e-13

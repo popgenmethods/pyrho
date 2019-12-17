@@ -97,6 +97,12 @@ def _main(args):
                                       times,
                                       args.decimate_rel_tol,
                                       args.decimate_anc_size)
+    logging.info('Size history to be used when computing lookup table is\n'
+                 + 'Scaled Size\tScaled Left Time\tScaled Right Time\n'
+                 + '\n'.join([str(p) + '\t' + str(t1) + '\t' + str(t2)
+                              for p, t1, t2 in zip(pop_sizes,
+                                                   [0] + times,
+                                                   times + [float('inf')])]))
     max_size = args.samplesize
     num_particles = max_size
     if args.moran_pop_size:

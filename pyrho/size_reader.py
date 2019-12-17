@@ -22,12 +22,33 @@ def read_msmc(fname, mut_rate):
         A tuple (sizes, times) containing lists of the population sizes and
         epoch break points.
     """
-    size_history = np.loadtxt(fname, skiprows=1)
-    if size_history.shape[1] != 4:
+    size_history = pd.read_csv(fname,
+                               delim_whitespace=True,
+                               dtype=np.float64,
+                               header=0)
+    col_names = ['time_index', 'left_time_boundary',
+                 'right_time_boundary', 'lambda']
+    for col, expected in zip(size_history.columns, col_names):
+        if not col.startswith(expected):
+            raise IOError('MSMC file does not containa a proper header!\n'
+                          'time_index\tleft_time_boundary\t'
+                          'right_time_boundary\tlambda')
+
+    if len(size_history.columns) != 4:
         raise IOError('MSMC file either contains more than one '
                       'population or is not formatted correctly.')
-    times = size_history[1:, 1] / mut_rate
-    sizes = (1. / size_history[:, -1]) / (2. * mut_rate)
+    size_history.rename(columns=dict(zip(size_history.columns, col_names)),
+                        inplace=True)
+    if not np.allclose(size_history['left_time_boundary'][1:],
+                       size_history['right_time_boundary'][:-1]):
+        raise IOError('Ends of epochs in MSMC do not line up with '
+                      'starts of subsequent epochs.')
+    times = np.array(size_history['left_time_boundary'])[1:] / mut_rate
+    if times[0] <= 0.:
+        raise IOError('Times must be strictly positive')
+    sizes = (1. / np.array(size_history['lambda'])) / (2. * mut_rate)
+    if np.any(sizes <= 0):
+        raise IOError('Sizes must be strictly positive')
     return sizes.tolist(), times.tolist()
 
 
@@ -65,6 +86,7 @@ def decimate_sizes(sizes, times, rel_tol, anc_size):
         A tuple (sizes, times) containing lists of the population sizes and
         epoch break points for the new decimated size history.
     """
+    rel_tol = max([rel_tol, 1e-6])
     sizes = np.array(sizes)
     if not anc_size:
         anc_size = sizes[-1]
@@ -89,8 +111,7 @@ def decimate_sizes(sizes, times, rel_tol, anc_size):
         else:
             prev_size = harmonic_size
         curr_idx += 1
-    if anc_size:
-        if np.abs((prev_size - anc_size) / prev_size) > rel_tol:
-            down_times.append(times[curr_idx - 1])
-            down_sizes.append(prev_size)
+    if np.abs((prev_size - anc_size) / prev_size) > rel_tol:
+        down_times.append(times[curr_idx - 1])
+        down_sizes.append(prev_size)
     return down_sizes + [anc_size], down_times
