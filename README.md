@@ -184,7 +184,8 @@ different metrics.  A typical usage is
 ```
 pyrho hyperparam --samplesize <n> --tablefile <make_table_output> \
 --mu <mu> --ploidy <ploidy> \
---popsizes <size1>,<size2>,<size3> --epochtimes <breakpoint1>,<breakpoint2> 
+--popsizes <size1>,<size2>,<size3> --epochtimes <breakpoint1>,<breakpoint2>  \
+--outfile <output_file>
 ```
 
 where ```<n>``` is your haploid sample size, ```<make_table_output>``` is

@@ -264,7 +264,7 @@ def _main(args):
                            'Log_Pearson_Corr_10kb',
                            'Log_Pearson_Corr_100kb',
                            'Spearman_Corr_1bp',
-                           'Spearman_Corr_10kb'
+                           'Spearman_Corr_10kb',
                            'Spearman_Corr_100kb',
                            'L2',
                            'Log_L2']) + '\n')
