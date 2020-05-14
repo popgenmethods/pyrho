@@ -326,6 +326,11 @@ def _main(args):
     table.columns *= 100./max_rho
     logging.info('\tDone!')
     table_size = sum(map(int, table.index.values[0].split()))
+    if table_size < max_size:
+        raise IOError('Lookup table was constructed for {} haploids, '
+                      'but there are as many as {} haploids in the sample. '
+                      'Either build a larger lookup table or subsample '
+                      'the data.'.format(table_size, max_size))
     if table_size > max_size:
         table = downsample(table, max_size)
     pool = None

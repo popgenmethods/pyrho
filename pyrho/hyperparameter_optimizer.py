@@ -190,6 +190,12 @@ def _args(super_parser):
 
 def _main(args):
     table = read_hdf(args.tablefile, 'ldtable')
+    table_size = sum(map(int, table.index.values[0].split()))
+    if table_size < args.samplesize:
+        raise IOError('Lookup table was constructed for {} haploids, '
+                      'but --samplesize is {} haploids.  Either build '
+                      'a larger lookup table or simulate fewer '
+                      'individuals.'.format(table_size, args.samplesize))
     max_rho = table.columns[-1]
     table.columns *= 100. / max_rho
     block_penalties = list(map(float, args.blockpenalty.split(',')))

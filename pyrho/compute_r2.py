@@ -100,8 +100,10 @@ def _main(args):
     if args.MAFcut < 0 or args.MAFcut >= 0.5:
         raise IOError('MAFcut must be between 0 and 0.5')
     if table_sample_size < args.samplesize:
-        raise IOError('Cannot compute r^2 statistics for a sample size larger'
-                      'than your lookup table.')
+        raise IOError('Cannot compute r^2 statistics for a sample size of {}, '
+                      'which is larger than your lookup table, which was '
+                      'constructed for a max size of '
+                      '{}.'.format(args.samplesize, table_sample_size))
     if table_sample_size > args.samplesize:
         table = downsample(table, args.samplesize)
     rho_grid = np.array(table.columns)
