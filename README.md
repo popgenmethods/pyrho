@@ -120,7 +120,7 @@ Before performing any inference, you must first compute a lookup table.  A
 standard use case would be
 
 ```
-pyrho make_table --sample_size <n> --approx  --moran_pop_size <N> \
+pyrho make_table --samplesize <n> --approx  --moran_pop_size <N> \
 --numthreads <par> --mu <mu> --outfile <outfile> \
 --popsizes <size1>,<size2>,<size3> --epochtimes <breakpoint1>,<breakpoint2>
 ```
