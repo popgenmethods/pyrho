@@ -47,7 +47,7 @@ def main():
         cmd_parser.add_argument(
             '--logfile', required=False, type=str, default='',
             help='File to store information about the pyrho run. To print to '
-                 'stdout use "."  Defaults to no logging.'
+                 'stdout use "-" or "."  Defaults to no logging.'
         )
         cmd_parser.add_argument(
             '-v', '--verbosity', required=False, type=int, default=30,
@@ -60,10 +60,10 @@ def main():
     except KeyError:
         parser.print_help()
         exit()
-    if args.logfile == ".":
+    if args.logfile == '-' or args.logfile == '.':
         logging.basicConfig(level=50 - args.verbosity)
     elif args.logfile:
-        logging.basicConfig(filename=args.log, level=50 - args.verbosity)
+        logging.basicConfig(filename=args.logfile, level=50 - args.verbosity)
     func(args)
 
 

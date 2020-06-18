@@ -1,5 +1,5 @@
 import warnings
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 warnings.filterwarnings(
     message='.*Conversion of the second.*',
     action='ignore',

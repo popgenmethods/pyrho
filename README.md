@@ -75,8 +75,16 @@ which requires
 [gsl](https://www.gnu.org/software/gsl/)
 and
 [hdf](https://www.hdfgroup.org).
-If you do not have these installed, these should be installed using
+pyrho also has a dependency on
+[openssl](https://www.openssl.org).
+If you do not have these installed, these can be installed using
 ```apt-get```, ```yum```, ```conda```, ```brew``` etc...
+
+For example, to install openssl on Ubuntu run:
+
+```
+sudo apt-get install libssl-dev
+```
 
 You will also need to have cython installed.  If you do not yet have it
 installed, run
@@ -222,7 +230,7 @@ VCF, and BCF format files. If using LDhat's formats see the
 A typical usage is
 
 ```
-pyrho optimize --vcffile <data> --widowsize <w> --blockpenalty <bpen> \
+pyrho optimize --vcffile <data> --windowsize <w> --blockpenalty <bpen> \
 --tablefile <make_table_output> --ploidy <ploidy> --outfile <output_file> \
 --numthreads <par>
 ```

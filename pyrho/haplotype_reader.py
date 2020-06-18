@@ -272,7 +272,8 @@ def parse_vcf_to_genos(vcf_filename, ploidy, pass_str=None):
         if locs and locs[-1] == variant.start:
             continue
         if not variant.is_snp:
-            continue
+            if not (variant.REF == '0' and variant.ALT[0] == '1'):
+                continue
         if len(variant.ALT) != 1:
             continue
         if pass_str and variant.FILTER != pass_str:
@@ -299,6 +300,8 @@ def parse_vcf_to_genos(vcf_filename, ploidy, pass_str=None):
         if alt_freq > 0 and alt_freq < 1:
             genos.append(gts)
             locs.append(variant.start)
+    if len(genos) == 0:
+        raise IOError('No valid SNPs found in VCF.')
     genos = np.array(genos)
     if np.any(np.diff(locs) <= 0.0):
         raise IOError('SNP locations must be strictly increasing.')
