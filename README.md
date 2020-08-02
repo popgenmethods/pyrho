@@ -29,6 +29,9 @@ of the 1000 Genomes Project.  Those maps are available
 including maps inferred for the two most recent genome builds
 hg19 and hg38. 
 
+The recombination maps for hg19 are now also available for simulations using
+the wonderful [stdpopsim](https://github.com/popsim-consortium/stdpopsim) package.
+
 Installation
 ------------
 
