@@ -157,7 +157,7 @@ def _args(super_parser):
     required.add_argument('-n', '--samplesize', type=int, required=True,
                           help='Maximum number of haplotypes in your sample.')
     required.add_argument('-m', '--mu', type=float, required=True,
-                          help='Twice the population-scaled mutation rate.')
+                          help='The per-generation mutation rate.')
     parser.add_argument('-t', '--epochtimes', type=str, required=False,
                         default='', help='Comma delimitted list of epoch '
                                          'breakpoints in generations.')
@@ -240,7 +240,7 @@ def _main(args):
     logging.info('Simulating data...')
     simulation_args = [((pop_config, args.mu, demography, args.ploidy),
                         reco_maps) for k in range(args.num_sims)]
-    test_set = list(pool.imap(_simulate_data, simulation_args, chunksize=50))
+    test_set = list(pool.imap(_simulate_data, simulation_args, chunksize=10))
     logging.info('\tdone simulating')
     scores = {}
     for block_penalty in block_penalties:
@@ -254,7 +254,7 @@ def _main(args):
                                                overlap=args.overlap,
                                                max_rho=max_rho),
                                        test_set,
-                                       chunksize=50))
+                                       chunksize=10))
             scores[(block_penalty,
                     window_size)] = _score(estimates,
                                            [ts[1] for ts in test_set],
