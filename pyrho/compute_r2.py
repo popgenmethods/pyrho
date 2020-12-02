@@ -84,7 +84,7 @@ def _args(super_parser):
     required.add_argument('--tablefile', required=True, type=str,
                           help='Lookup table file.')
     required.add_argument('--samplesize', type=int, required=True,
-                          help='Number of individuals for which to compute '
+                          help='Number of haplotypes for which to compute '
                                'statistics.  Must be less than or equal to '
                                'the sample size in tablefile.')
     parser.add_argument('-o', '--outfile', type=str, required=False,
