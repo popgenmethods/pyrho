@@ -6,6 +6,7 @@ fused-LASSO
 
 ## Table of Contents
 * [Human Recombination Maps](#human-recombination-maps)
+* [Human Population Sizes](#human-population-sizes)
 * [Installation](#installation)
 * [Usage](#usage)
     * [make_table](#make_table)
@@ -31,6 +32,20 @@ hg19/GRCh37 and hg38/GRCh38.
 
 The recombination maps for hg38/GRCh38 are now also available for simulations using
 the wonderful [stdpopsim](https://github.com/popsim-consortium/stdpopsim) package.
+
+## Human Population Sizes
+
+When making the recombination maps for the 1000 Genomes Project populations we used
+[smc++](https://github.com/popgenmethods/smcpp)
+to infer population size histories for each population.
+Those size histories are plotted in
+[Figure 2 of the pyrho paper](https://advances.sciencemag.org/content/5/10/eaaw9206/),
+and the data used to make those plots are available in `smcpp_popsizes_1kg.csv`.
+The `x` column is time in years
+assuming a generation time of 29 years,
+and the `y` column
+contains the population size in Ne.
+
 
 Installation
 ------------
