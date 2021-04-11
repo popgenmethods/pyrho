@@ -189,8 +189,8 @@ The output is an hdf format table containing all of the pre-computed
 likelihoods needed to run [hyperparam](#hyperparam), [optimize](#optimize),
 and [compute_r2](#compute_r2).
 
-Note that make_table can consume significant amounts of memory (N=256 requires
-about 100G of RAM using the --approx flag).
+Note that make_table can consume significant amounts of memory (N=210 requires
+about 20G of RAM using the --approx flag).
 
 To see a full list of options and their meaning, run 
 ```pyrho make_table --help```.
