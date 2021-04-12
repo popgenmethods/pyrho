@@ -268,6 +268,10 @@ per-generation recombination rate in that interval.
 To see a full list of options and their meaning, run
 ```pyrho optimize --help```.
 
+pyrho optimize can be slow if there is a lot of missing data.
+Consider removing SNPs with more than a few missing genotypes
+to increase the speed.
+
 
 #### A note about LDhat format input
 
