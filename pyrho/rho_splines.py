@@ -125,6 +125,24 @@ def _get_hap_comb(hconf, to_add00, to_add01, to_add10, to_add11):
     return to_return
 
 
+@njit('float64[:](float64[:, :], int64[:], int64[:])', cache=True)
+def _get_hap_likelihood_fast_missing(table, subtable_sizes, config):
+    hconf = np.array([[config[0], config[1], 0],
+                      [config[3], config[4], 0],
+                      [0, 0, 0]])
+    this_size = hconf.sum()
+    this_idx = get_table_idx(hconf[0, 0],
+                             hconf[0, 1],
+                             hconf[1, 0],
+                             hconf[1, 1],
+                             this_size)
+    if this_size <= 1:
+        return np.zeros_like(table[0, :])
+    offset = 0 if this_size == 2 else subtable_sizes[this_size-3]
+    log_comb = _get_hap_comb(hconf, 0, 0, 0, 0)
+    return table[offset + this_idx, :] + log_comb
+
+
 @njit('float64[:](float64[:, :], int64[:], int64)', cache=True)
 def _get_hap_likelihood(table, config, sample_size):
     hconf = np.array([[config[0], config[1], config[2]],
@@ -167,12 +185,20 @@ def _get_splines_hap(table, configs, sample_size):
     return to_return
 
 
-@njit('float64[:](float64[:, :], int64[:], int64)', cache=True)
-def _get_dip_likelihood(table, config, sample_size):
-    gconf = np.array([[config[0], config[1], config[2], config[3]],
-                      [config[4], config[5], config[6], config[7]],
-                      [config[8], config[9], config[10], config[11]],
-                      [config[12], config[13], config[14], 0]])
+@njit('float64[:](float64[:, :], int64[:], int64[:], int64, boolean)', cache=True)
+def _get_dip_likelihood(table, subtable_sizes, config, sample_size,
+                        fast_missing):
+    if fast_missing:
+        gconf = np.array([[config[0], config[1], config[2], 0],
+                          [config[4], config[5], config[6], 0],
+                          [config[8], config[9], config[10], 0],
+                          [0, 0, 0, 0]])
+
+    else:
+        gconf = np.array([[config[0], config[1], config[2], config[3]],
+                          [config[4], config[5], config[6], config[7]],
+                          [config[8], config[9], config[10], config[11]],
+                          [config[12], config[13], config[14], 0]])
     to_return = np.full(table.shape[1], np.NINF)
     for k in range(gconf[1, 1] + 1):
         k_inv = gconf[1, 1] - k
@@ -185,14 +211,19 @@ def _get_dip_likelihood(table, config, sample_size):
                              2*gconf[-1, 0] + gconf[-1, 1],
                              2*gconf[-1, 2] + gconf[-1, 1]])
         comb = log_mult_coef(np.array([k, k_inv]))
-        this_ll = _get_hap_likelihood(table, hap_conf, sample_size) + comb
+        if fast_missing:
+            this_ll = _get_hap_likelihood_fast_missing(table, subtable_sizes,
+                                                       hap_conf)
+        else:
+            this_ll = _get_hap_likelihood(table, hap_conf, sample_size)
+        this_ll += comb
         to_return = np.logaddexp(to_return, this_ll)
     swaps = gconf[1, :].sum() + gconf[:, 1].sum() - gconf[1, 1]
     return swaps*np.log(2) + to_return
 
 
-@njit('float64[:, :](float64[:, :], int64[:, :], int64)', cache=True)
-def _get_splines(table, configs, sample_size):
+@njit('float64[:, :](float64[:, :], int64[:], int64[:, :], int64, boolean)', cache=True)
+def _get_splines(table, subtable_sizes, configs, sample_size, fast_missing):
     ploidy = int(np.round(np.sqrt(configs.shape[1] + 1))) - 2
     if ploidy != 1 and ploidy != 2:
         raise NotImplementedError('Ploidies other than 1 and 2 '
@@ -200,15 +231,21 @@ def _get_splines(table, configs, sample_size):
     to_return = np.zeros((configs.shape[0], table.shape[1]))
     for i in range(configs.shape[0]):
         if ploidy == 1:
-            to_return[i, :] = _get_hap_likelihood(table, configs[i, :],
-                                                  sample_size)
+            if fast_missing:
+                to_return[i, :] = _get_hap_likelihood_fast_missing(
+                    table, subtable_sizes, configs[i, :]
+                )
+            else:
+                to_return[i, :] = _get_hap_likelihood(table, configs[i, :],
+                                                      sample_size)
         if ploidy == 2:
-            to_return[i, :] = _get_dip_likelihood(table, configs[i, :],
-                                                  sample_size)
+            to_return[i, :] = _get_dip_likelihood(table, subtable_sizes,
+                                                  configs[i, :], sample_size,
+                                                  fast_missing)
     return to_return
 
 
-def compute_splines(configs, lookup_table):
+def compute_splines(configs, lookup_table, subtable_sizes, max_size, fast_missing):
     """
     Computes the log-likelihoods for a set of configs
 
@@ -233,10 +270,8 @@ def compute_splines(configs, lookup_table):
     Raises:
         ArithmeticError: Error in computing splines.
     """
-    max_size = sum(map(int, lookup_table.index.values[0].split()))
-    rho_grid = np.array(lookup_table.columns)
-    table = lookup_table.values
-    rho_values = _get_splines(table, configs, max_size)
+    rho_values = _get_splines(lookup_table, subtable_sizes, configs, max_size,
+                              fast_missing)
     if np.any(np.isnan(rho_values)):
         raise ArithmeticError('Error in computing splines.')
-    return rho_values, rho_grid
+    return rho_values

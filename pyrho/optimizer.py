@@ -25,7 +25,7 @@ from pyrho.haplotype_reader import (genos_to_configs, parse_vcf_to_genos,
                                     parse_seqs_to_genos)
 from pyrho.rho_splines import compute_splines
 from pyrho.objective_function import RhomapObjective
-from pyrho.utility import downsample, InterruptablePool as Pool
+from pyrho.utility import _single_vec_downsample, downsample, InterruptablePool as Pool
 
 
 # the following algorithms implement Liu et al. 2010
@@ -124,10 +124,12 @@ def _window_optimize(args):
 
 
 def _window_optimize_helper(genos, lengths, windowsize, table,
-                            ploidy, bpen):
+                            rho_grid, subtable_sizes, max_size,
+                            ploidy, bpen, fast_missing):
     configs, adj_matrix = genos_to_configs(genos, windowsize, ploidy)
     logging.debug('Reticulating splines...')
-    splines, rho_grid = compute_splines(configs, table)
+    splines = compute_splines(configs, table, subtable_sizes,
+                              max_size, fast_missing)
     obj_func = RhomapObjective(splines, rho_grid, adj_matrix, lengths, bpen)
     logging.debug('Starting optimization...')
     ml_result = minimize_scalar(obj_func.negative_loglihood_one_rho,
@@ -182,8 +184,10 @@ def _stitch(rhos_list, overlap):
     return np.array(first_window + list(bulk) + last_window)
 
 
-def optimize(genos, ploidy, positions, table, metawindow,
-             overlap, windowsize, block_penalty, pool=None):
+def optimize(genos, ploidy, positions, table, rho_list, subtable_sizes,
+             max_size,
+             metawindow, overlap, windowsize, block_penalty, fast_missing,
+             pool=None):
     """
     Infers a fine-scale recombination map.
 
@@ -207,6 +211,7 @@ def optimize(genos, ploidy, positions, table, metawindow,
         block_penalty: The L1 regularization penalty used in the fused-LASSO
             objective function.  Higher penalties result in smoother
             recombination maps.
+        fast_missing: XXX
         pool: A Multiprocessing.Pool object to perform the parallelization. If
             None, no parallelization is performed.
 
@@ -234,8 +239,10 @@ def optimize(genos, ploidy, positions, table, metawindow,
         k += 1
     logging.debug('\tDone! There are %d metawindows.', k + 1)
     optimization_args = izip(hap_chunks, lengths_list, repeat(windowsize),
-                             repeat(table), repeat(ploidy),
-                             repeat(block_penalty))
+                             repeat(table), repeat(rho_list),
+                             repeat(subtable_sizes), repeat(max_size),
+                             repeat(ploidy),
+                             repeat(block_penalty), repeat(fast_missing))
     if pool is None:
         results = list(map(_window_optimize, optimization_args))
     else:
@@ -287,6 +294,10 @@ def _args(super_parser):
                         help='Require that the FILTER column of VCF '
                              'matches vcfpass to inclide SNP in analysis. '
                              'Deault is to include all SNPs.')
+    parser.add_argument('--fast_missing',
+                        dest='fast_missing',
+                        action='store_true',
+                        help='XXX')
     return parser
 
 
@@ -333,14 +344,28 @@ def _main(args):
                       'the data.'.format(table_size, max_size))
     if table_size > max_size:
         table = downsample(table, max_size)
+    table_list = [table.values]
+    subtable_sizes = [table.shape[0]]
+    if args.fast_missing:
+        logging.info('Generating partial lookup tables')
+        curr_size = max_size - 1
+        while curr_size > 1:
+            table_list.append(
+                _single_vec_downsample(table_list[-1], curr_size+1)
+            )
+            subtable_sizes.append(table_list[-1].shape[0])
+            curr_size -= 1
+    subtable_sizes = np.cumsum(subtable_sizes[::-1])
+    full_table = np.concatenate(table_list[::-1])
     pool = None
     if args.numthreads > 1:
         pool = Pool(args.numthreads, maxtasksperchild=5)
     logging.info('Beginning optimization.')
     start_time = time.time()
-    result = optimize(genos, args.ploidy, positions, table,
+    result = optimize(genos, args.ploidy, positions, full_table,
+                      table.columns, subtable_sizes, max_size,
                       args.metawindow, args.overlap, args.windowsize,
-                      args.blockpenalty, pool)
+                      args.blockpenalty, args.fast_missing, pool)
     opt_time = time.time() - start_time
     logging.info('Time for running optimization = %f', opt_time)
     outfile = args.outfile if args.outfile else sys.stdout

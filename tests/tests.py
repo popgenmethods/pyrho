@@ -8,11 +8,15 @@ from scipy.special import binom
 from scipy.sparse import dok_matrix
 from scipy.sparse.linalg import spsolve
 
-from pyrho.utility import get_table_idx, log_mult_coef, downsample
+from pyrho.utility import (get_table_idx,
+                           log_mult_coef,
+                           downsample,
+                           _single_vec_downsample)
 from pyrho.rho_splines import (_get_hap_likelihood,
                                _get_dip_likelihood,
                                _slow_sample,
-                               _get_hap_comb)
+                               _get_hap_comb,
+                               _get_hap_likelihood_fast_missing)
 from pyrho.optimizer import _rose_alg, _stitch
 from pyrho.objective_function import _vec_map_splines, _vec_map_splines_d
 from pyrho.hyperparameter_optimizer import _window_average
@@ -150,37 +154,132 @@ def test_dip_likelihood():
                            'ldtable').values
     big_like = _get_dip_likelihood(
         big_table,
+        np.array([1]),
         np.array([1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        15
+        15,
+        False
     )
     small_like = _get_dip_likelihood(
         small_table,
+        np.array([1]),
         np.array([1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        10
+        10,
+        False
     )
     assert np.allclose(small_like, big_like)
     big_like = _get_dip_likelihood(
         big_table,
+        np.array([1]),
         np.array([1, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        15
+        15,
+        False
     )
     small_like = _get_dip_likelihood(
         small_table,
+        np.array([1]),
         np.array([1, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-        10
+        10,
+        False
     )
     assert np.allclose(small_like, big_like)
     big_like = _get_dip_likelihood(
         big_table,
+        np.array([1]),
         np.array([1, 1, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0]),
-        15
+        15,
+        False
     )
     small_like = _get_dip_likelihood(
         small_table,
+        np.array([1]),
         np.array([1, 1, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0]),
-        10
+        10,
+        False
     )
     assert np.allclose(small_like, big_like)
+
+def generate_big_table():
+    curr_size = 14
+    big_table = read_hdf(joinpath(THIS_DIR, 'n_15_test_table.hdf'),
+                         'ldtable').values
+    tables = [big_table]
+    sizes = [big_table.shape[0]]
+    while curr_size > 1:
+        tables.append(
+            _single_vec_downsample(tables[-1], curr_size+1)
+        )
+        sizes.append(tables[-1].shape[0])
+        curr_size -= 1
+    big_table = np.concatenate(tables[::-1])
+    sizes = np.cumsum(sizes[::-1])
+    return big_table, sizes
+
+
+def test_get_dip_likelihood_fast_missing():
+    big_table, sizes = generate_big_table()
+    small_table = read_hdf(joinpath(THIS_DIR, 'n_10_test_table.hdf'),
+                           'ldtable').values
+
+    big_like = _get_dip_likelihood(
+        big_table,
+        sizes,
+        np.array([1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        15,
+        True
+    )
+    small_like = _get_dip_likelihood(
+        small_table,
+        np.array([1]),
+        np.array([1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        10,
+        False
+    )
+    assert np.allclose(small_like, big_like)
+
+    big_like = _get_dip_likelihood(
+        big_table,
+        sizes,
+        np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        15,
+        True
+    )
+    small_like = _get_dip_likelihood(
+        small_table,
+        np.array([1]),
+        np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        10,
+        False
+    )
+    assert np.allclose(small_like, big_like)
+
+
+def test_get_hap_likelihood_fast_missing():
+    big_table, sizes = generate_big_table()
+    other_table = read_hdf(joinpath(THIS_DIR, 'n_15_test_table.hdf'),
+                           'ldtable').values
+    fast = _get_hap_likelihood_fast_missing(
+        big_table,
+        sizes,
+        np.array([3, 3, 0, 3, 6, 0, 0, 0, 0]),
+    )
+    slow = _get_hap_likelihood(
+        other_table,
+        np.array([3, 3, 0, 3, 6, 0, 0, 0, 0]),
+        15
+    )
+    assert np.allclose(fast, slow)
+    fast = _get_hap_likelihood_fast_missing(
+        big_table,
+        sizes,
+        np.array([1, 1, 0, 1, 2, 0, 0, 0, 0]),
+    )
+    slow = _get_hap_likelihood(
+        other_table,
+        np.array([1, 1, 0, 1, 2, 0, 0, 0, 0]),
+        15
+    )
+    assert np.allclose(fast, slow)
+
 
 
 def test_rose_algorithm():

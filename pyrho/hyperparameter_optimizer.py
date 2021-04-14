@@ -50,12 +50,14 @@ def _simulate_data(sim_args):
     return haps, mut_pos, label
 
 
-def _call_optimize(dataset, metawindow, windowsize, table, ploidy, bpen,
-                   overlap, max_rho):
+def _call_optimize(dataset, metawindow, windowsize, table, rho_list, max_size,
+                   ploidy, bpen, overlap, max_rho):
     logging.info('Windowsize = %d, Block Penalty = %f', windowsize, bpen)
     haps, positions, _ = dataset
-    result = optimize(haps, ploidy, positions, table, metawindow,
-                      overlap, windowsize, bpen, pool=None) * max_rho / 100.
+    result = optimize(haps, ploidy, positions, table, rho_list,
+                      np.zeros(1, dtype=int), max_size, metawindow,
+                      overlap, windowsize, bpen, pool=None,
+                      fast_missing=False) * max_rho / 100.
     logging.info('Done optimizing')
     return result
 
@@ -248,7 +250,9 @@ def _main(args):
             estimates = list(pool.imap(partial(_call_optimize,
                                                metawindow=args.metawindow,
                                                windowsize=window_size,
-                                               table=table,
+                                               table=table.values,
+                                               rho_list=table.columns,
+                                               max_size=args.samplesize,
                                                ploidy=args.ploidy,
                                                bpen=block_penalty,
                                                overlap=args.overlap,
