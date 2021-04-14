@@ -271,7 +271,7 @@ To see a full list of options and their meaning, run
 pyrho optimize can be slow if there is a lot of missing data.
 Consider removing SNPs with more than a few missing genotypes
 to increase the speed.  Another option is to use the
-`--fast_missing`` option.  This option uses a bit more memory,
+`--fast_missing` option.  This option uses a bit more memory,
 and throws away some data, but can be substantially faster
 for datasets with lots of missing data, and does not require
 pre-filtering SNPs for missingness.
