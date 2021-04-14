@@ -130,14 +130,16 @@ def _get_hap_likelihood_fast_missing(table, subtable_sizes, config):
     hconf = np.array([[config[0], config[1], 0],
                       [config[3], config[4], 0],
                       [0, 0, 0]])
+    if np.any(hconf.sum(axis=0)[0:2] == 0):
+        return np.zeros_like(table[0, :])
+    if np.any(hconf.sum(axis=1)[0:2] == 0):
+        return np.zeros_like(table[0, :])
     this_size = hconf.sum()
     this_idx = get_table_idx(hconf[0, 0],
                              hconf[0, 1],
                              hconf[1, 0],
                              hconf[1, 1],
                              this_size)
-    if this_size <= 1:
-        return np.zeros_like(table[0, :])
     offset = 0 if this_size == 2 else subtable_sizes[this_size-3]
     log_comb = _get_hap_comb(hconf, 0, 0, 0, 0)
     return table[offset + this_idx, :] + log_comb
