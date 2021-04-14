@@ -200,8 +200,15 @@ def optimize(genos, ploidy, positions, table, rho_list, subtable_sizes,
         ploidy: The ploidy of the data (1 for phased data, 2 for unphased).
         positions: An array containing the physical locations of the SNPs
             in genos.
-        table: A pandas.DataFrame containing a lookup table as computed
-            with make_table.
+        table: The values from the pandas.DataFrame containing a lookup table
+            as computed with make_table. If fast_missing is true, then this
+            should contain the values from lookup tables for sample sizes
+            2...n concatenated.
+        rho_list: The rho values corresponding to the columns of table
+        subtable_sizes: A numpy array of integers containing the (cummulative)
+           sizes for each of the subtables making up table (if fast_missing
+           is true).  If fast_missing is false, this is ignored.
+        max_size: The number of haplotypes present in the dataset.
         metawindow: The minimum size in number of SNPs into which to chunk the
             data for parallelization.
         overlap: The amount of overlap in number of SNPs to use when stitching
@@ -211,7 +218,9 @@ def optimize(genos, ploidy, positions, table, rho_list, subtable_sizes,
         block_penalty: The L1 regularization penalty used in the fused-LASSO
             objective function.  Higher penalties result in smoother
             recombination maps.
-        fast_missing: XXX
+        fast_missing: A boolean which determines whether to use approximations
+            to speed up inference.  If fast_mssing is true, then table and
+            subtable_sizes need to be adjusted as described above.
         pool: A Multiprocessing.Pool object to perform the parallelization. If
             None, no parallelization is performed.
 
@@ -297,7 +306,13 @@ def _args(super_parser):
     parser.add_argument('--fast_missing',
                         dest='fast_missing',
                         action='store_true',
-                        help='XXX')
+                        help='Cache some additional likelihoods, and '
+                             'for each pair of loci throw away any '
+                             'individuals that are missing at exactly '
+                             'one locus.  This should be substantially '
+                             'faster for datasets with a high degree of '
+                             'missingness at a minimal loss of accuracy, '
+                             'but it is an untested feature.')
     return parser
 
 

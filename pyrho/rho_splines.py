@@ -257,15 +257,21 @@ def compute_splines(configs, lookup_table, subtable_sizes, max_size, fast_missin
             allele j at the second locus.  * indicates missingness. Genotypes
             are encoded as (n_00, n_01, n_02, n_0*, n_10, n_11, n_12, n_1*,
             n_20, n_21, n_22, n_2*, n_*0, n_*1, n_*2).
-        lookup_table: A pandas.DataFrame object containin a lookup table as
-            computed by make_table.
+        lookup_table: The numpy array containing the values of the
+            pandas.DataFrame lookup table as computed by make_table.  If
+            fast_missing is true, then this should contain the value from
+            lookup tables for sample sizes 2...n concatenated.
+        subtable_sizes: A numpy array of integers containing the (cummulative)
+           sizes for each of the subtables making up table (if fast_missing
+           is true).  If fast_missing is false, this is ignored.
+        max_size: The number of haplotypes present in the dataset.
+        fast_missing: A boolean which determines whether to use approximations
+            to speed up inference.  If fast_mssing is true, then table and
+            subtable_sizes need to be adjusted as described above.
 
     Returns:
-        A tuple (rho_values, rho_grid) as follows.
         rho_values: A num_configs by num_rhos numpy array containing the
             log-likelihood of each config at each recombination rate.
-        rho_grid: A num_rhos length numpy array containing the recombination
-            rates at which rho_values have been computed.
 
     Raises:
         ArithmeticError: Error in computing splines.
