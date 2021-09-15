@@ -82,6 +82,10 @@ def _main(args):
                           'popsizes')
         pop_sizes, times = read_smcpp(args.smcpp_file)
     else:
+        if not args.popsizes:
+            raise IOError('If not using msmc_file or smcpp_file, you must '
+                          'provide at least one population size using the '
+                          'popsizes argument')
         times = []
         if args.epochtimes:
             times = list(map(float, args.epochtimes.split(',')))
