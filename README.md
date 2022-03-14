@@ -14,6 +14,7 @@ fused-LASSO
     * [optimize](#optimize)
     * [compute_r2](#compute_r2)
 * [Example](#example)
+* [FAQ](#faq)
 * [Citation](#citation)
 
 
@@ -321,6 +322,35 @@ Example
 The example folder contains a well-commented shell script example.sh which
 runs through a typical use-case, taking a VCF file and the output of smc++
 and ultimately computing a fine-scale recombination map.
+
+
+FAQ
+-------
+
+#### Does `pyrho` return the population-scaled recombination rate "rho" or the per-generation recombination rate "r"?
+
+Short answer: `pyrho` infers the per-generation, per-base recombination rate "r".
+
+Long answer: internally `pyrho` infers "rho" and then uses the user-specified Ne to
+convert "rho" to "r".  This scaling works well in humans, but has not been tested
+extensively in species with different mutation rates or ratios of mutation rate
+to recombination rate.  Overall, differences across the genome will be stable (i.e.,
+relative rates) but the absolute scaling should be taken with some degree of
+skepticism, especially when working with species whose evolutionary parameters
+differ from those of humans.
+
+#### Help!  `pyrho optimize` has been running for 3 days and is not done yet!
+
+Missing data makes the default implementation of `pyrho optimize` run __very__ slowly.
+To get reasonable runtimes either remove sites with more that a few missing genotypes
+or use the `--fast-missing` flag.  The `--fast-missing` flag causes `pyrho` to only
+use individuals who are genotypes at both loci when calculating two-locus likelihoods.
+This effectively throws away the information provided by individuals who are genotyped
+at only one of the two loci.  This information is not particularly useful for inferring
+recombination rates, and ignoring it can result in a significant speedup in the
+presence of missing data.
+
+
 
 Citation
 --------
