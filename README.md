@@ -344,7 +344,7 @@ differ from those of humans.
 Missing data makes the default implementation of `pyrho optimize` run __very__ slowly.
 To get reasonable runtimes either remove sites with more that a few missing genotypes
 or use the `--fast-missing` flag.  The `--fast-missing` flag causes `pyrho` to only
-use individuals who are genotypes at both loci when calculating two-locus likelihoods.
+use individuals who are genotyped at both loci when calculating two-locus likelihoods.
 This effectively throws away the information provided by individuals who are genotyped
 at only one of the two loci.  This information is not particularly useful for inferring
 recombination rates, and ignoring it can result in a significant speedup in the
