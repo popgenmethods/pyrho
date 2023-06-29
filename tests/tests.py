@@ -1,5 +1,6 @@
 from __future__ import division
 from os.path import abspath, dirname, join as joinpath
+import subprocess
 
 import pytest
 import numpy as np
@@ -198,6 +199,7 @@ def test_dip_likelihood():
     )
     assert np.allclose(small_like, big_like)
 
+
 def generate_big_table():
     curr_size = 14
     big_table = read_hdf(joinpath(THIS_DIR, 'n_15_test_table.hdf'),
@@ -279,7 +281,6 @@ def test_get_hap_likelihood_fast_missing():
         15
     )
     assert np.allclose(fast, slow)
-
 
 
 def test_rose_algorithm():
@@ -573,3 +574,39 @@ def test_issue6():
     sizes = [p / N_ref for p in sizes]
     new_sizes, new_times = decimate_sizes(sizes, times, 0.0, None)
     assert np.abs(new_times[0] - 1.85199e-07 / (2. * N_ref)) < 1e-13
+
+
+def test_issue27():
+    exit_code = subprocess.call([
+        'pyrho',
+        'make_table',
+        '-n', '5',
+        '-N', '7',
+        '--mu', '1.25e-8',
+        '--logfile', '.',
+        '--outfile', joinpath(THIS_DIR, 'test.hdf'),
+        '--approx',
+        '-t', '1,2,5',
+        '-p', '10000,1000,500,1000'
+    ])
+    assert exit_code == 0
+
+    test = read_hdf(joinpath(THIS_DIR, 'test.hdf'), 'ldtable')
+    check = read_hdf(joinpath(THIS_DIR, 'test_check.hdf'), 'ldtable')
+
+    assert np.allclose(test, check)
+
+    # Should fail for forward in time epoch specification
+    exit_code = subprocess.call([
+        'pyrho',
+        'make_table',
+        '-n', '200',
+        '-N', '256',
+        '--mu', '1.25e-8',
+        '--logfile', '.',
+        '--outfile', 'garbage.hdf',
+        '--approx',
+        '-t', '5,2,1',
+        '-p', '1000,500,1000,10000'
+    ])
+    assert exit_code != 0

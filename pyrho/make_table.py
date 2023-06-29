@@ -97,6 +97,12 @@ def _main(args):
     if len(pop_sizes) != len(times)+1:
         raise IOError('Number of population sizes must match '
                       'number of epochs.')
+    if not all([t1 - t0 > 0 for t1, t0 in zip(times[1:], times[:-1])]):
+        raise IOError('Demographies must be specified backward '
+                      'in time, with the breakpoints being '
+                      'strictly increasing.')
+    if not all([p > 0 for p in pop_sizes]):
+        raise IOError('Population sizes must be positive.')
     pop_sizes, times = decimate_sizes(pop_sizes,
                                       times,
                                       args.decimate_rel_tol,
