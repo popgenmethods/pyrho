@@ -27,7 +27,7 @@ automatically scaled to be the per-generation recombination rate.
 
 We have inferred recombination maps for each of the 26 populations in phase 3
 of the 1000 Genomes Project.  Those maps are available
-[at this link](https://drive.google.com/open?id=1Tgt_7GsDO0-o02vcYSfwqHFd3JNF6R06)
+[at this link](https://zenodo.org/records/11437540)
 including maps inferred for the two most recent genome builds
 hg19/GRCh37 and hg38/GRCh38. 
 
