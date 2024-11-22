@@ -42,6 +42,9 @@ def _args(super_parser):
     parser.add_argument('-N', '--moran_pop_size', type=int, required=False,
                         default=None, help='Number of particles to consider '
                                            'if using --approx.')
+    parser.add_argument('-T', '--theta', type=float, required=False,
+                        default=0.0005, help='theta genetic diversity '
+                                             'parameter [%(default)s]')
     parser.add_argument('--numthreads', type=int, required=False, default=1,
                         help='Number of threads to run in parallel.')
     parser.add_argument('--approx', action='store_true',
@@ -70,7 +73,7 @@ def _args(super_parser):
 
 
 def _main(args):
-    n_ref = 0.0005 / (4. * args.mu)
+    n_ref = args.theta / (4. * args.mu)
     if args.msmc_file:
         if args.smcpp_file or args.epochtimes or args.popsizes:
             raise IOError('Can only specify one of msmc_file, smcpp_file, or '
@@ -126,7 +129,7 @@ def _main(args):
 
     rho_grid = [i * .1 for i in range(100)] + list(range(10, 101))
     logging.info('Beginning Lookup Table.  This may take a while')
-    table = LookupTable(num_particles, 0.0005, rho_grid, pop_sizes,
+    table = LookupTable(num_particles, args.theta, rho_grid, pop_sizes,
                         times, not args.approx, args.numthreads,
                         store_stationary=args.store_stationary,
                         load_stationary=args.load_stationary).table
