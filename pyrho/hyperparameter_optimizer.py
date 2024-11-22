@@ -7,7 +7,7 @@ maps on the simulated data. Writes various measures of accuracy
 (correlation in several forms and scales; L2 norms) to a file.
 
 Run on the command line with pyrho hyperparam -h or --help to
-see a lit of options and their description.
+see a list of options and their description.
 """
 from __future__ import division
 import logging
@@ -145,15 +145,18 @@ def _args(super_parser):
     required.add_argument('-o', '--outfile', type=str, required=True,
                           help='Destination for printing output.')
     parser.add_argument('--numthreads', type=int, required=False, default=1,
-                        help='Number of threads to run in parallel.')
+                        help='Number of threads to run in parallel '
+                             '[%(default)s].')
     parser.add_argument('--metawindow', type=int, required=False, default=4001,
                         help='Minimum number of SNPs to include in each '
-                             'independent, parallelizable chunk.')
+                             'independent, parallelizable chunk '
+                             '[%(default)s].')
     parser.add_argument('--overlap', type=int, required=False, default=100,
-                        help='Amount to trim off each side of a metawindow.')
+                        help='Amount to trim off each side of a metawindow '
+                             '[%(default)s].')
     parser.add_argument('--ploidy', type=int, required=False, default=1,
                         help='Ploidy of the data. Currently only support '
-                             '1 for haplotypes, 2 for genotypes.')
+                             '1 for haplotypes, 2 for genotypes [%(default)s]')
     required.add_argument('--tablefile', required=True, type=str,
                           help='File containing a pyrho lookup table.')
     required.add_argument('-n', '--samplesize', type=int, required=True,
@@ -161,7 +164,7 @@ def _args(super_parser):
     required.add_argument('-m', '--mu', type=float, required=True,
                           help='The per-generation mutation rate.')
     parser.add_argument('-t', '--epochtimes', type=str, required=False,
-                        default='', help='Comma delimitted list of epoch '
+                        default='', help='Comma-delimited list of epoch '
                                          'breakpoints in generations.')
     parser.add_argument('--msmc_file', type=str, required=False,
                         default='', help='MSMC output file to specify the '
@@ -170,20 +173,22 @@ def _args(super_parser):
                         default='', help='smc++ csv file to specify the size '
                                          'history.')
     parser.add_argument('-p', '--popsizes', type=str, required=False,
-                        default='', help='Comma delimitted list of epoch '
+                        default='', help='Comma-delimited list of epoch '
                                          'population sizes.')
     parser.add_argument('--num_sims', type=int, required=False, default=100,
-                        help='Number of 1Mb regions to simulate.')
+                        help='Number of 1Mb regions to simulate '
+                             '[%(default)s].')
     parser.add_argument('-bpen', '--blockpenalty', type=str, required=False,
                         default='15,20,25,30,35,40,45,50',
                         help='Comma delimited list of block penalties to '
-                             'try.')
+                             'try [%(default)s].')
     parser.add_argument('-w', '--windowsize', type=str, required=False,
                         default='30,40,50,60,70,80,90',
-                        help='Comma delimited list of window sizes to try.')
+                        help='Comma delimited list of window sizes to try '
+                             '[%(default)s].')
     parser.add_argument('--decimate_rel_tol', required=False, type=float,
                         default=0.0, help='Relative tolerance when decimating '
-                                          'size history.')
+                                          'size history [%(default)s].')
     parser.add_argument('--decimate_anc_size', required=False, type=float,
                         default=None, help='Most ancestral size when '
                                            'decimating size history.')

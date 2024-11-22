@@ -97,7 +97,7 @@ and
 pyrho also has a dependency on
 [openssl](https://www.openssl.org).
 If you do not have these installed, these can be installed using
-```apt-get```, ```yum```, ```conda```, ```brew``` etc...
+`apt-get`, `yum`, `conda`, `brew` etc...
 
 For example, to install openssl on Ubuntu run:
 

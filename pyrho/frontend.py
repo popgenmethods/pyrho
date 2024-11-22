@@ -51,7 +51,8 @@ def main():
         )
         cmd_parser.add_argument(
             '-v', '--verbosity', required=False, type=int, default=30,
-            help='Amount of information to print to logfile on a 0-50 scale.'
+            help='Amount of information to print to logfile on a 0-50 scale. '
+                 '[%(default)s]'
         )
 
     args = parser.parse_args()

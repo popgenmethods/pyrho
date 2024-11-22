@@ -28,7 +28,7 @@ def _args(super_parser):
     required.add_argument('-m', '--mu', type=float, required=True,
                           help='The per-generation mutation rate.')
     parser.add_argument('-t', '--epochtimes', type=str, required=False,
-                        default='', help='Comma delimitted list of epoch '
+                        default='', help='Comma-delimited list of epoch '
                                          'breakpoints in generations.')
     parser.add_argument('--msmc_file', type=str, required=False,
                         default='', help='MSMC output file to specify the '
@@ -37,7 +37,7 @@ def _args(super_parser):
                         default='', help='smc++ csv file to specify the size '
                                          'history.')
     parser.add_argument('-p', '--popsizes', type=str, required=False,
-                        default='', help='Comma delimitted list population '
+                        default='', help='Comma-delimited list population '
                                          'sizes.')
     parser.add_argument('-N', '--moran_pop_size', type=int, required=False,
                         default=None, help='Number of particles to consider '
@@ -46,7 +46,8 @@ def _args(super_parser):
                         default=0.0005, help='theta genetic diversity '
                                              'parameter [%(default)s]')
     parser.add_argument('--numthreads', type=int, required=False, default=1,
-                        help='Number of threads to run in parallel.')
+                        help='Number of threads to run in parallel '
+                             '[%(default)s].')
     parser.add_argument('--approx', action='store_true',
                         help='Use the Moran approximation to compute the '
                              'haplotype lookup table.')
@@ -65,7 +66,7 @@ def _args(super_parser):
                                            'tables sequentially.')
     parser.add_argument('--decimate_rel_tol', required=False, type=float,
                         default=0.0, help='Relative tolerance when decimating '
-                                          'size history.')
+                                          'size history [%(default)s].')
     parser.add_argument('--decimate_anc_size', required=False, type=float,
                         default=None, help='Most ancestral size when '
                                            'decimating size history.')
@@ -121,7 +122,7 @@ def _main(args):
     if args.moran_pop_size:
         if not args.approx:
             raise IOError('Cannot use moran_pop_size when computing an exact '
-                          'lookup table.  Turn off --aprox flag.')
+                          'lookup table.  Turn off --approx flag.')
         if max_size > args.moran_pop_size:
             raise IOError('moran_pop_size must be at least as large as the '
                           'desired sample size.')
