@@ -136,4 +136,4 @@ def _main(args):
         logging.info('Downsampling')
         table = downsample(table, max_size)
         logging.info('\t...complete')
-    table.to_hdf(args.outfile, 'ldtable', mode='w')
+    table.to_hdf(args.outfile, key='ldtable', mode='w')
