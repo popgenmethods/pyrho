@@ -31,7 +31,7 @@ def _slow_sample(table, config, sample_size):
     hconf = np.array([[config[0], config[1], config[2]],
                       [config[3], config[4], config[5]],
                       [config[6], config[7], 0]])
-    to_return = np.full(table.shape[1], np.NINF)
+    to_return = np.full(table.shape[1], -np.inf)
     free = sample_size - config.sum()
     if free > 0:
         for missing_left in range(2):
@@ -98,11 +98,11 @@ def _get_hap_comb(hconf, to_add00, to_add01, to_add10, to_add11):
     if runtime > transpose_runtime:
         hconf = hconf.transpose()
         to_add01, to_add10 = to_add10, to_add01
-    to_return = np.NINF
+    to_return = -np.inf
     imin = max(0, hconf[-1, 0] - to_add00)
     imax = min(to_add10, hconf[-1, 0])
     for i in range(imin, imax + 1):
-        i_coef = np.NINF
+        i_coef = -np.inf
         i_comb = log_mult_coef(np.array([i, hconf[-1, 0] - i]))
         jmin = max(0, hconf[-1, 1] - to_add11,
                    i + hconf[-1, 1] + hconf[1, -1] - to_add11 - to_add10)
@@ -150,7 +150,7 @@ def _get_hap_likelihood(table, config, sample_size):
     hconf = np.array([[config[0], config[1], config[2]],
                       [config[3], config[4], config[5]],
                       [config[6], config[7], 0]])
-    to_return = np.full(table.shape[1], np.NINF)
+    to_return = np.full(table.shape[1], -np.inf)
     full = hconf[0:2, 0:2].sum()
     free = sample_size - full - hconf[-1, :].sum() - hconf[:, -1].sum()
     for to_add00 in range(free + hconf[0, -1] + hconf[-1, 0] + 1):
@@ -201,7 +201,7 @@ def _get_dip_likelihood(table, subtable_sizes, config, sample_size,
                           [config[4], config[5], config[6], config[7]],
                           [config[8], config[9], config[10], config[11]],
                           [config[12], config[13], config[14], 0]])
-    to_return = np.full(table.shape[1], np.NINF)
+    to_return = np.full(table.shape[1], -np.inf)
     for k in range(gconf[1, 1] + 1):
         k_inv = gconf[1, 1] - k
         hap_conf = np.array([2*gconf[0, 0] + gconf[0, 1] + gconf[1, 0] + k,

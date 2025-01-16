@@ -97,7 +97,7 @@ and
 pyrho also has a dependency on
 [openssl](https://www.openssl.org).
 If you do not have these installed, these can be installed using
-```apt-get```, ```yum```, ```conda```, ```brew``` etc...
+`apt-get`, `yum`, `conda`, `brew` etc...
 
 For example, to install openssl on Ubuntu run:
 
@@ -105,11 +105,11 @@ For example, to install openssl on Ubuntu run:
 sudo apt-get install libssl-dev
 ```
 
-You will also need to have cython installed.  If you do not yet have it
+You will also need to have cython and pytables.  If you do not yet have them
 installed, run
 
 ```
-pip install cython
+pip install cython pytables
 ```
 
 You should be able to then just clone and install pyrho by running

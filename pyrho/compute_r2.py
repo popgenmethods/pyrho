@@ -69,14 +69,14 @@ def _args(super_parser):
     parser = super_parser.add_parser(
         'compute_r2',
         description='Compute theoretical quantiles or mean of the '
-                    'distribution of r^2, using a lookupt table '
+                    'distribution of r^2, using a lookup table '
                     'generated with the pyrho make_table command.',
         usage='pyrho compute_r2 <options>'
     )
     required = parser.add_argument_group('required arguments')
     parser.add_argument('--MAFcut', type=float, required=False, default=0.0,
                         help='Only look at pairs of loci where MAF > MAFcut '
-                             'at both loci.')
+                             'at both loci [%(default)s].')
     parser.add_argument('--quantiles', required=False, type=str, default='',
                         help='Quantiles of r^2 distribution to compute.')
     parser.add_argument('--compute_mean', action='store_true',
