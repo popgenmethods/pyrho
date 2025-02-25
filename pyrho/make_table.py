@@ -107,10 +107,11 @@ def _main(args):
                       'strictly increasing.')
     if not all([p > 0 for p in pop_sizes]):
         raise IOError('Population sizes must be positive.')
-    pop_sizes, times = decimate_sizes(pop_sizes,
-                                      times,
-                                      args.decimate_rel_tol,
-                                      args.decimate_anc_size)
+    if len(times) > 0:
+        pop_sizes, times = decimate_sizes(pop_sizes,
+                                          times,
+                                          args.decimate_rel_tol,
+                                          args.decimate_anc_size)
     logging.info('Size history to be used when computing lookup table is\n'
                  + 'Scaled Size\tScaled Left Time\tScaled Right Time\n'
                  + '\n'.join([str(p) + '\t' + str(t1) + '\t' + str(t2)

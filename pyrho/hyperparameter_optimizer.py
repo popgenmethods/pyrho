@@ -227,10 +227,11 @@ def _main(args):
     if len(pop_sizes) != len(times) + 1:
         raise IOError('Number of population sizes must '
                       'match number of epochs.')
-    pop_sizes, times = decimate_sizes(pop_sizes,
-                                      times,
-                                      args.decimate_rel_tol,
-                                      args.decimate_anc_size)
+    if len(times) > 0:
+        pop_sizes, times = decimate_sizes(pop_sizes,
+                                          times,
+                                          args.decimate_rel_tol,
+                                          args.decimate_anc_size)
 
     pop_config = [
         msprime.PopulationConfiguration(sample_size=args.samplesize,
