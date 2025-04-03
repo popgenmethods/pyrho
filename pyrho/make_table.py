@@ -70,6 +70,12 @@ def _args(super_parser):
     parser.add_argument('--decimate_anc_size', required=False, type=float,
                         default=None, help='Most ancestral size when '
                                            'decimating size history.')
+    parser.add_argument('--high_accuracy_stationary', action='store_true',
+                        help='Use a more stringent threshold when '
+                             'computing the ancestral two-locus allele '
+                             'frequency distribution. This was the default '
+                             'in pyrho versions < 0.2.0')
+
     return parser
 
 
@@ -134,7 +140,8 @@ def _main(args):
     table = LookupTable(num_particles, args.theta, rho_grid, pop_sizes,
                         times, not args.approx, args.numthreads,
                         store_stationary=args.store_stationary,
-                        load_stationary=args.load_stationary).table
+                        load_stationary=args.load_stationary,
+                        lax_stationary=not args.high_accuracy_stationary).table
     logging.info('\t...complete')
     table.columns /= 4. * n_ref
     if num_particles > max_size:

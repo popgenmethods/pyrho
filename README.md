@@ -154,29 +154,31 @@ pyrho make_table --samplesize <n> --approx  --moran_pop_size <N> \
 
 which indicates that we should compute a lookup table for a sample of size
 ```<n>```
-, from a population where at present the size is 
+, from a population where at present the effective size _in number of diploids_ is 
 ```<size1>```
 , at 
 ```<breakpoint1>```
 generations in the past the size was 
 ```<size2>```
-and so on, with a per-generation
+diploids and so on, with a per-generation
 mutation rate 
 ```<mu>```
-The --numthreads option tells pyrho to use 
+The ```--numthreads``` option tells pyrho to use 
 ```<par>```
 processors
-when computing the lookup table.  Finally, --approx with --moran_pop_size
+when computing the lookup table.  Finally, ```--approx``` with ```--moran_pop_size```
 tells pyrho to compute an approximate lookup table for a larger sample size
 ```<N>```
 and then downsample to a table for size
 ```<n>```
-.  In general 
+.  In general, we have found that while setting 
 ```<N>```
-should be
 about 25-50% larger than
 ```<n>```
-.  Without using the --approx flag, pyrho can
+results in accuracy indistinguishable from using the exact model,
+this added accuracy does not generally impact the inferred recombination rates.
+As such, we recommend setting ```<N>``` equal to ```<n>```.
+Without using the --approx flag, pyrho can
 compute lookup tables for 
 ```<n>```
 < ~50, whereas with the --approx flag, pyrho
@@ -184,14 +186,23 @@ can handle sample sizes in the hundreds (e.g.,
 ```<n>```
 = 200,
 ```<N>```
-= 256) with little loss in accuracy as long as ```<n>``` << ```<N>```.
+= 200) with little loss in accuracy for the inferred recombination rates.
+If the two-locus likelihoods need to be extremely accurate, then it might be
+preferable to set e.g., ```<n>``` = 200 and ```<N>``` = 256.
+
+In ```v0.2.0``` we altered the default behavior in computing likelihoods,
+using a slightly more lax convergence criteria in the numerics.  This results
+in significantly faster runtimes at essentially no loss in accuracy,
+but if highly accurate two-locus likelihoods are required, the old behavior
+can be recovered using ```--high_accuracy_stationary```.
 
 The output is an hdf format table containing all of the pre-computed
 likelihoods needed to run [hyperparam](#hyperparam), [optimize](#optimize),
 and [compute_r2](#compute_r2).
 
-Note that make_table can consume significant amounts of memory (N=210 requires
-about 20G of RAM using the --approx flag).
+Note that make_table used to conssume significant amounts of memory, but that
+has been improved, e.g., N=210 requires
+about 20G of RAM using the ```--approx``` flag.
 
 To see a full list of options and their meaning, run 
 ```pyrho make_table --help```.

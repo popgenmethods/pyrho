@@ -594,7 +594,7 @@ def test_issue27():
     test = read_hdf(joinpath(THIS_DIR, 'test.hdf'), 'ldtable')
     check = read_hdf(joinpath(THIS_DIR, 'test_check.hdf'), 'ldtable')
 
-    assert np.allclose(test, check)
+    assert np.allclose(test, check, atol=0.)
 
     # Should fail for forward in time epoch specification
     exit_code = subprocess.call([

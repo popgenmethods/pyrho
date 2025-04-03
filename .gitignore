@@ -232,3 +232,6 @@ pyrho/__pycache__/*
 pyrho/CEU_N_256_lookup_table_downsampled_demo.hdf5
 pyrho/data.vcf.*
 pyrho.egg-info/*
+
+# build/
+build/*
