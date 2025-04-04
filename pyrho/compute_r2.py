@@ -107,7 +107,7 @@ def _main(args):
     if table_sample_size > args.samplesize:
         table = downsample(table, args.samplesize)
     rho_grid = np.array(table.columns)
-    labels = ['Rho']
+    labels = ['r']
     quants = None
     if args.compute_mean:
         labels.append('mean')
