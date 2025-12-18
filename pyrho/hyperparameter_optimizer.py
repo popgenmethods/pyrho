@@ -12,7 +12,7 @@ see a list of options and their description.
 from __future__ import division
 import logging
 import sys
-from pkg_resources import resource_stream
+import importlib.resources
 from itertools import repeat
 from functools import partial
 try:
@@ -125,12 +125,16 @@ def _score(estimates, positions, labels, pool):
 
 def _load_hapmap():
     reco_maps = []
-    for bline in resource_stream('pyrho', 'data/pyrho_hapmap_maps.txt'):
-        positions, rates = zip(*[p.split(',') for p in bline.decode().split()])
-        positions = list(map(int, map(float, positions)))
-        rates = list(map(float, rates))
-        assert np.all(np.array(rates)[:-1] > 0)
-        reco_maps.append((positions, rates))
+    with importlib.resources.open_binary(
+        'pyrho', 'data/pyrho_hapmap_maps.txt'
+    ) as mapfile:
+
+        for bline in mapfile:
+            positions, rates = zip(*[p.split(',') for p in bline.decode().split()])
+            positions = list(map(int, map(float, positions)))
+            rates = list(map(float, rates))
+            assert np.all(np.array(rates)[:-1] > 0)
+            reco_maps.append((positions, rates))
     return reco_maps
 
 
