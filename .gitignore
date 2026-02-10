@@ -243,3 +243,4 @@ example/ACB_hyperparam_results.txt
 example/ACB_n_20_N_40_lookuptable.hdf
 example/ACB_r2.txt
 
+*.DS_store
